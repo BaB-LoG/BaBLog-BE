@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.bablog.meal.repository.mapper.MealFoodMapper">
+
+    <insert id="insert" parameterType="com.ssafy.bablog.meal.domain.MealFood" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO meal_food (meal_id, food_id, quantity, unit)
+        VALUES (#{mealId}, #{foodId}, #{quantity}, #{unit})
+    </insert>
+
+    <resultMap id="MealFoodWithFoodMap" type="com.ssafy.bablog.meal.repository.mapper.MealFoodWithFood">
+        <association property="mealFood" javaType="com.ssafy.bablog.meal.domain.MealFood">
+            <id property="id" column="meal_food_id"/>
+            <result property="mealId" column="meal_id"/>
+            <result property="foodId" column="food_id"/>
+            <result property="quantity" column="quantity"/>
+            <result property="unit" column="unit"/>
+            <result property="createdAt" column="meal_food_created_at"/>
+            <result property="updatedAt" column="meal_food_updated_at"/>
+        </association>
+        <association property="food" javaType="com.ssafy.bablog.food.domain.Food">
+            <id property="id" column="food_id"/>
+            <result property="standard" column="standard"/>
+            <result property="name" column="name"/>
+            <result property="kcal" column="kcal"/>
+            <result property="protein" column="protein"/>
+            <result property="fat" column="fat"/>
+            <result property="carbohydrates" column="carbohydrates"/>
+            <result property="sugar" column="sugar"/>
+            <result property="natrium" column="natrium"/>
+            <result property="cholesterol" column="cholesterol"/>
+            <result property="saturatedFat" column="saturated_fat"/>
+            <result property="transFat" column="trans_fat"/>
+            <result property="foodWeight" column="food_weight"/>
+            <result property="vendor" column="vendor"/>
+            <result property="createdAt" column="food_created_at"/>
+            <result property="updatedAt" column="food_updated_at"/>
+        </association>
+    </resultMap>
+
+    <resultMap id="MealFoodResultMap" type="com.ssafy.bablog.meal.domain.MealFood">
+        <id property="id" column="id"/>
+        <result property="mealId" column="meal_id"/>
+        <result property="foodId" column="food_id"/>
+        <result property="quantity" column="quantity"/>
+        <result property="unit" column="unit"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findById" parameterType="long" resultMap="MealFoodResultMap">
+        SELECT id, meal_id, food_id, quantity, unit, created_at, updated_at
+        FROM meal_food
+        WHERE id = #{id}
+    </select>
+
+    <select id="findByMealIdsWithFood" resultMap="MealFoodWithFoodMap">
+        SELECT
+            mf.id AS meal_food_id,
+            mf.meal_id,
+            mf.food_id,
+            mf.quantity,
+            mf.unit,
+            mf.created_at AS meal_food_created_at,
+            mf.updated_at AS meal_food_updated_at,
+            f.id AS food_id,
+            f.standard,
+            f.name,
+            f.kcal,
+            f.protein,
+            f.fat,
+            f.carbohydrates,
+            f.sugar,
+            f.natrium,
+            f.cholesterol,
+            f.saturated_fat,
+            f.trans_fat,
+            f.food_weight,
+            f.vendor,
+            f.created_at AS food_created_at,
+            f.updated_at AS food_updated_at
+        FROM meal_food mf
+                 INNER JOIN food f ON mf.food_id = f.id
+        WHERE mf.meal_id IN
+        <foreach collection="mealIds" item="mealId" open="(" separator="," close=")">
+            #{mealId}
+        </foreach>
+        ORDER BY mf.meal_id, mf.id
+    </select>
+
+    <delete id="deleteById" parameterType="long">
+        DELETE FROM meal_food WHERE id = #{id}
+    </delete>
+
+    <update id="update" parameterType="com.ssafy.bablog.meal.domain.MealFood">
+        UPDATE meal_food
+        SET quantity = #{quantity},
+            unit = #{unit},
+            food_id = #{foodId}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

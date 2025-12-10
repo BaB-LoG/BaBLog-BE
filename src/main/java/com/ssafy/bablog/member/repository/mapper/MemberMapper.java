@@ -19,4 +19,6 @@ public interface MemberMapper {
     void updatePassword(@Param("id") Long id, @Param("password") String password);
 
     void deleteById(@Param("id") Long id);
+
+    java.util.List<Long> findAllIds();
 }
