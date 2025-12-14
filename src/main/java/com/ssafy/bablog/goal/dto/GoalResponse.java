@@ -1,24 +1,21 @@
-package com.ssafy.bablog.goal.domain;
+package com.ssafy.bablog.goal.dto;
 
+import com.ssafy.bablog.goal.domain.GoalType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 
-@Data
+@Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-
-public class Goal {
-
+public class GoalResponse {
     private Long id;
-    private Long memberId;
     private GoalType goalType;
     private String title;
     private BigDecimal targetValue;
@@ -26,9 +23,5 @@ public class Goal {
     private LocalDate startDate;
     private LocalDate endDate;
     private BigDecimal clickPerProgress;
-    private boolean isCompleted;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
-
-
+    private Boolean isCompleted;
 }
