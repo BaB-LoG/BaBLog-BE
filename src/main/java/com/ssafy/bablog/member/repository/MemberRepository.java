@@ -2,6 +2,7 @@ package com.ssafy.bablog.member.repository;
 
 import com.ssafy.bablog.member.domain.Member;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MemberRepository {
@@ -18,4 +19,9 @@ public interface MemberRepository {
     void updatePassword(Long memberId, String encodedPassword);
 
     void deleteById(Long memberId);
+
+    /**
+     * 스케줄러에서 전 회원을 순회할 때 사용.
+     */
+    List<Long> findAllIds();
 }

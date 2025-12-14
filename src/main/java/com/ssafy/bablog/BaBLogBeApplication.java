@@ -6,7 +6,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@MapperScan("com.ssafy.bablog.member.repository.mapper")
+@MapperScan({
+        "com.ssafy.bablog.member.repository.mapper",
+        "com.ssafy.bablog.meal.repository.mapper",
+        "com.ssafy.bablog.meal_log.repository.mapper",
+        "com.ssafy.bablog.food.repository.mapper"
+})
 @EnableScheduling
 public class BaBLogBeApplication {
 

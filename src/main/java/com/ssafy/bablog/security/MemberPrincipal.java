@@ -38,6 +38,12 @@ public class MemberPrincipal implements UserDetails {
         return authorities;
     }
 
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return UserDetails.super.isAccountNonExpired();
+    }
+
     public Long getId() {
         return id;
     }
