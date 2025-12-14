@@ -55,4 +55,9 @@ public class MemberRepositoryImpl implements MemberRepository {
     public void deleteById(Long memberId) {
         memberMapper.deleteById(memberId);
     }
+
+    @Override
+    public java.util.List<Long> findAllIds() {
+        return memberMapper.findAllIds();
+    }
 }
