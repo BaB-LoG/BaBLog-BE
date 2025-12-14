@@ -22,7 +22,7 @@ CREATE TABLE `member_nutrient` (
   `carbohydrates` decimal(6,2),
   `sugar` decimal(6,2),
   `natrium` decimal(8,2),
-  `cholesterol` decimal(6,2),
+  `cholesterol` decimal(6,2)
 );
 
 CREATE TABLE `meal_log` (

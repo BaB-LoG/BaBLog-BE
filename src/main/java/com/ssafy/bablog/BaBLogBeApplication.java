@@ -10,7 +10,8 @@ import org.springframework.scheduling.annotation.EnableScheduling;
         "com.ssafy.bablog.member.repository.mapper",
         "com.ssafy.bablog.meal.repository.mapper",
         "com.ssafy.bablog.meal_log.repository.mapper",
-        "com.ssafy.bablog.food.repository.mapper"
+        "com.ssafy.bablog.food.repository.mapper",
+        "com.ssafy.bablog.goal.repository"
 })
 @EnableScheduling
 public class BaBLogBeApplication {
