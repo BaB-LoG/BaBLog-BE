@@ -36,17 +36,17 @@ public class Meal {
     // 식단에 음식 추가 시 이를 meal에 반영하기 위해 만드는 객체
     // 실제 meal에 데이터로 들어가는 meal이 아니라
     // meal에 더해지기 위한 meal을 만드는 메서드.
-    public static Meal nutritionDelta(Food food, BigDecimal quantity) {
+    public static Meal nutritionDelta(Food food, BigDecimal intake) {
         return Meal.builder()
-                .kcal(NutritionCalculator.scaleNutrient(food.getKcal(), food, quantity))
-                .protein(NutritionCalculator.scaleNutrient(food.getProtein(), food, quantity))
-                .fat(NutritionCalculator.scaleNutrient(food.getFat(), food, quantity))
-                .saturatedFat(NutritionCalculator.scaleNutrient(food.getSaturatedFat(), food, quantity))
-                .transFat(NutritionCalculator.scaleNutrient(food.getTransFat(), food, quantity))
-                .carbohydrates(NutritionCalculator.scaleNutrient(food.getCarbohydrates(), food, quantity))
-                .sugar(NutritionCalculator.scaleNutrient(food.getSugar(), food, quantity))
-                .natrium(NutritionCalculator.scaleNutrient(food.getNatrium(), food, quantity))
-                .cholesterol(NutritionCalculator.scaleNutrient(food.getCholesterol(), food, quantity))
+                .kcal(NutritionCalculator.scaleNutrient(food.getKcal(), food, intake))
+                .protein(NutritionCalculator.scaleNutrient(food.getProtein(), food, intake))
+                .fat(NutritionCalculator.scaleNutrient(food.getFat(), food, intake))
+                .saturatedFat(NutritionCalculator.scaleNutrient(food.getSaturatedFat(), food, intake))
+                .transFat(NutritionCalculator.scaleNutrient(food.getTransFat(), food, intake))
+                .carbohydrates(NutritionCalculator.scaleNutrient(food.getCarbohydrates(), food, intake))
+                .sugar(NutritionCalculator.scaleNutrient(food.getSugar(), food, intake))
+                .natrium(NutritionCalculator.scaleNutrient(food.getNatrium(), food, intake))
+                .cholesterol(NutritionCalculator.scaleNutrient(food.getCholesterol(), food, intake))
                 .build();
     }
 

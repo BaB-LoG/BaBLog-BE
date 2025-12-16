@@ -48,4 +48,16 @@
             updated_at = CURRENT_TIMESTAMP
     </insert>
 
+    <select id="findByMealIds" resultMap="MealLogResultMap">
+        SELECT id, meal_id, member_id, logged_at,
+               kcal, protein, fat, saturated_fat, trans_fat,
+               carbohydrates, sugar, natrium, cholesterol,
+               created_at, updated_at
+        FROM meal_log
+        WHERE meal_id IN
+        <foreach collection="list" item="mealId" open="(" separator="," close=")">
+            #{mealId}
+        </foreach>
+    </select>
+
 </mapper>

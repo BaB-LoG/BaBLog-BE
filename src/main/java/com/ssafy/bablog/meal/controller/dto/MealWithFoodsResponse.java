@@ -2,6 +2,7 @@ package com.ssafy.bablog.meal.controller.dto;
 
 import com.ssafy.bablog.meal.domain.Meal;
 import com.ssafy.bablog.meal.domain.MealType;
+import com.ssafy.bablog.meal_log.domain.MealLog;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -20,22 +21,12 @@ public class MealWithFoodsResponse {
     private NutritionResponse nutrition; // getMeal에서는 사용하지 않음
     private List<MealFoodResponse> foods;
 
-    public static MealWithFoodsResponse withNutrition(Meal meal, List<MealFoodResponse> foods) {
+    public static MealWithFoodsResponse withNutrition(Meal meal, List<MealFoodResponse> foods, MealLog mealLog) {
         return new MealWithFoodsResponse(
                 meal.getId(),
                 meal.getMealType(),
                 meal.getMealDate(),
-                NutritionResponse.fromMeal(meal),
-                foods
-        );
-    }
-
-    public static MealWithFoodsResponse withoutNutrition(Meal meal, List<MealFoodResponse> foods) {
-        return new MealWithFoodsResponse(
-                meal.getId(),
-                meal.getMealType(),
-                meal.getMealDate(),
-                null,
+                mealLog != null ? NutritionResponse.from(mealLog) : NutritionResponse.fromMeal(meal),
                 foods
         );
     }

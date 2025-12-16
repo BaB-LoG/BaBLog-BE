@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.bablog.member_nutrient.repository.mapper.MemberNutrientDailyMapper">
+
+    <resultMap id="MemberNutrientDailyResultMap" type="com.ssafy.bablog.member_nutrient.domain.MemberNutrientDaily">
+        <id property="id" column="id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="targetDate" column="target_date"/>
+        <result property="kcal" column="kcal"/>
+        <result property="protein" column="protein"/>
+        <result property="fat" column="fat"/>
+        <result property="saturatedFat" column="saturated_fat"/>
+        <result property="transFat" column="trans_fat"/>
+        <result property="carbohydrates" column="carbohydrates"/>
+        <result property="sugar" column="sugar"/>
+        <result property="natrium" column="natrium"/>
+        <result property="cholesterol" column="cholesterol"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="upsert" parameterType="com.ssafy.bablog.member_nutrient.domain.MemberNutrientDaily">
+        INSERT INTO member_nutrient_daily (
+            member_id, target_date,
+            kcal, protein, fat, saturated_fat, trans_fat,
+            carbohydrates, sugar, natrium, cholesterol
+        )
+        VALUES (
+            #{memberId}, #{targetDate},
+            #{kcal}, #{protein}, #{fat}, #{saturatedFat}, #{transFat},
+            #{carbohydrates}, #{sugar}, #{natrium}, #{cholesterol}
+        )
+        ON DUPLICATE KEY UPDATE
+            kcal = VALUES(kcal),
+            protein = VALUES(protein),
+            fat = VALUES(fat),
+            saturated_fat = VALUES(saturated_fat),
+            trans_fat = VALUES(trans_fat),
+            carbohydrates = VALUES(carbohydrates),
+            sugar = VALUES(sugar),
+            natrium = VALUES(natrium),
+            cholesterol = VALUES(cholesterol),
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <select id="findByMemberAndDate" resultMap="MemberNutrientDailyResultMap">
+        SELECT id, member_id, target_date,
+               kcal, protein, fat, saturated_fat, trans_fat,
+               carbohydrates, sugar, natrium, cholesterol,
+               created_at, updated_at
+        FROM member_nutrient_daily
+        WHERE member_id = #{memberId}
+          AND target_date = #{targetDate}
+        LIMIT 1
+    </select>
+
+    <select id="findRange" resultMap="MemberNutrientDailyResultMap">
+        SELECT id, member_id, target_date,
+               kcal, protein, fat, saturated_fat, trans_fat,
+               carbohydrates, sugar, natrium, cholesterol,
+               created_at, updated_at
+        FROM member_nutrient_daily
+        WHERE member_id = #{memberId}
+          AND target_date BETWEEN #{from} AND #{to}
+        ORDER BY target_date DESC
+    </select>
+
+</mapper>

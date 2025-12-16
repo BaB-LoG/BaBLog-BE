@@ -1,0 +1,119 @@
+{
+  "baseUrl": "http://localhost:8080",
+  "publicEndpoints": [
+    {
+      "name": "회원가입",
+      "method": "POST",
+      "path": "/members/signup",
+      "request": {
+        "email": "yshong1998@gmail.com",
+        "password": "12345678",
+        "name": "홍예석",
+        "gender": "MALE",
+        "birthDate": "1998-11-23",
+        "heightCm": 178,
+        "weightKg": 90
+      },
+      "required": ["email", "password", "name", "gender"],
+      "response": null
+    },
+    {
+      "name": "로그인",
+      "method": "POST",
+      "path": "/members/login",
+      "request": { "email": "email@example.com", "password": "example_password" },
+      "required": ["email", "password"],
+      "response": {
+        "tokenType": "Bearer",
+        "accessToken": "sample.jwt.token",
+        "member": {
+          "id": 2,
+          "email": "email@example.com",
+          "name": "홍예석",
+          "gender": "MALE",
+          "birthDate": "1998-11-23",
+          "heightCm": 178,
+          "weightKg": 90
+        }
+      }
+    }
+  ],
+  "auth": { "type": "bearer", "header": "Authorization", "format": "Bearer <token>" },
+  "protectedEndpoints": [
+    {
+      "name": "로그아웃",
+      "method": "POST",
+      "path": "/members/logout",
+      "request": null,
+      "response": null
+    },
+    {
+      "name": "회원 정보 조회",
+      "method": "GET",
+      "path": "/members/info",
+      "request": null,
+      "response": {
+        "id": 2,
+        "email": "example@gmail.com",
+        "name": "name",
+        "gender": "MALE",
+        "birthDate": "1998-11-23",
+        "heightCm": 178,
+        "weightKg": 90
+      }
+    },
+    {
+      "name": "회원 정보 수정",
+      "method": "PATCH",
+      "path": "/members/info",
+      "request": {
+        "name": "홍예석",
+        "gender": "MALE",
+        "birthDate": "1999-01-01",
+        "heightCm": 180,
+        "weightKg": 91
+      },
+      "nullableFields": ["name", "gender", "birthDate", "heightCm", "weightKg"],
+      "response": {
+        "id": 2,
+        "email": "yshong1998@gmail.com",
+        "name": "홍예석",
+        "gender": "MALE",
+        "birthDate": "1999-01-01",
+        "heightCm": 180,
+        "weightKg": 91
+      }
+    },
+    {
+      "name": "비밀번호 확인",
+      "method": "POST",
+      "path": "/members/password-check",
+      "request": {
+        "password": "12345678"
+      },
+      "required": ["password"],
+      "response": true
+    },
+    {
+      "name": "비밀번호 변경",
+      "method": "POST",
+      "path": "/members/password-change",
+      "request": {
+        "currentPassword": "12345678",
+        "newPassword": "123456789"
+      },
+      "required": ["currentPassword", "newPassword"],
+      "response": null
+    },
+    {
+      "name": "회원 탈퇴",
+      "method": "DELETE",
+      "path": "/members/sign-out",
+      "request": {
+        "password": "12345678"
+      },
+      "required": ["password"],
+      "response": null
+    }
+  ]
+}

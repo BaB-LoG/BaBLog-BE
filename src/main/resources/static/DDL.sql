@@ -23,6 +23,25 @@ CREATE TABLE `member_nutrient` (
   `sugar` decimal(6,2),
   `natrium` decimal(8,2),
   `cholesterol` decimal(6,2),
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE `member_nutrient_daily` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `member_id` bigint NOT NULL,
+  `target_date` date NOT NULL,
+  `kcal` decimal(6,2),
+  `protein` decimal(6,2),
+  `fat` decimal(6,2),
+  `saturated_fat` decimal(6,2),
+  `trans_fat` decimal(6,2),
+  `carbohydrates` decimal(6,2),
+  `sugar` decimal(6,2),
+  `natrium` decimal(8,2),
+  `cholesterol` decimal(6,2),
+  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
+  `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
 );
 
 CREATE TABLE `meal_log` (
@@ -84,7 +103,7 @@ CREATE TABLE `meal_food` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `meal_id` bigint NOT NULL,
   `food_id` bigint NOT NULL,
-  `quantity` decimal(10,2),
+  `intake` decimal(10,2),
   `unit` varchar(50),
   `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
   `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
@@ -158,7 +177,10 @@ CREATE INDEX `idx_daily_report_member_report_date` ON `daily_report` (`member_id
 
 CREATE INDEX `idx_weekly_report_member_period` ON `weekly_report` (`member_id`, `start_date`, `end_date`);
 
+CREATE UNIQUE INDEX `idx_member_nutrient_daily_member_date` ON `member_nutrient_daily` (`member_id`, `target_date`);
+
 ALTER TABLE `member_nutrient` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
+ALTER TABLE `member_nutrient_daily` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 
 ALTER TABLE `meal_log` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 

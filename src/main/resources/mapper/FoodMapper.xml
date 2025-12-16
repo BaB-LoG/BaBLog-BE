@@ -44,4 +44,32 @@
         WHERE id = #{id}
     </select>
 
+    <select id="search" resultMap="FoodResultMap">
+        SELECT id,
+               standard,
+               name,
+               kcal,
+               protein,
+               fat,
+               carbohydrates,
+               sugar,
+               natrium,
+               cholesterol,
+               saturated_fat,
+               trans_fat,
+               food_weight,
+               vendor,
+               created_at,
+               updated_at
+        FROM food
+        WHERE 1 = 1
+        <if test="nameKeyword != null">
+            AND LOWER(name) LIKE CONCAT('%', #{nameKeyword}, '%')
+        </if>
+        <if test="vendorKeyword != null">
+            AND LOWER(vendor) LIKE CONCAT('%', #{vendorKeyword}, '%')
+        </if>
+        ORDER BY updated_at DESC, id DESC
+    </select>
+
 </mapper>

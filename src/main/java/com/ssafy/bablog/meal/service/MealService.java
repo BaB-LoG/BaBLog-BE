@@ -16,6 +16,7 @@ import com.ssafy.bablog.meal.repository.MealRepository;
 import com.ssafy.bablog.meal.repository.mapper.MealFoodWithFood;
 import com.ssafy.bablog.meal_log.domain.MealLog;
 import com.ssafy.bablog.meal_log.repository.MealLogRepository;
+import com.ssafy.bablog.member_nutrient.service.MemberNutrientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -38,11 +39,13 @@ public class MealService {
     private final MealFoodRepository mealFoodRepository;
     private final FoodRepository foodRepository;
     private final MealLogRepository mealLogRepository;
+    private final MemberNutrientService memberNutrientService;
 
     /**
      * Member 1명의 하루치 기본 Meal 레코드를 생성 (존재하면 건너뜀)
      */
     public void createDailyMeals(Long memberId, LocalDate mealDate) {
+        memberNutrientService.ensureTodaySnapshot(memberId);
         for (MealType mealType : MealType.values()) {
             mealRepository.findByMemberAndTypeAndDate(memberId, mealType, mealDate)
                     .orElseGet(() -> mealRepository.save(
@@ -77,20 +80,20 @@ public class MealService {
         MealFood mealFood = MealFood.builder()
                 .mealId(meal.getId())
                 .foodId(food.getId())
-                .quantity(request.getQuantity())
+                .intake(request.getIntake())
                 .unit(request.getUnit())
                 .build();
         // 5. 저장하기
         mealFoodRepository.save(mealFood);
 
         // 6. 추가한 음식의 영양 정보를 해당 날짜의 mealLog에 누적하기
-        MealLog mealLogDelta = MealLog.from(meal, food, request.getQuantity());
+        MealLog mealLogDelta = MealLog.from(meal, food, request.getIntake());
 
         // 7. 만약 meal_log가 없다면 생성, 그리고 누적하기
         mealLogRepository.upsertNutrition(mealLogDelta);
 
         // 8. meal 테이블에도 영양 정보를 누적
-        Meal mealDelta = Meal.nutritionDelta(food, request.getQuantity());
+        Meal mealDelta = Meal.nutritionDelta(food, request.getIntake());
         adjustNutrition(meal, mealDelta);
 
         return AddMealFoodResponse.of(
@@ -108,9 +111,14 @@ public class MealService {
         List<Meal> meals = mealRepository.findByMemberAndDate(memberId, mealDate);
         List<Long> mealIds = meals.stream().map(Meal::getId).toList();
         Map<Long, List<MealFoodResponse>> foodsByMeal = buildMealFoodResponses(mealIds);
+        Map<Long, MealLog> logsByMeal = buildMealLogs(mealIds);
 
         return meals.stream()
-                .map(meal -> MealWithFoodsResponse.withNutrition(meal, foodsByMeal.getOrDefault(meal.getId(), List.of())))
+                .map(meal -> MealWithFoodsResponse.withNutrition(
+                        meal,
+                        foodsByMeal.getOrDefault(meal.getId(), List.of()),
+                        logsByMeal.get(meal.getId())
+                ))
                 .toList();
     }
 
@@ -126,7 +134,12 @@ public class MealService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "식단 정보를 찾을 수 없습니다."));
         ensureMealOwner(meal, memberId);
         Map<Long, List<MealFoodResponse>> foodsByMeal = buildMealFoodResponses(List.of(mealId));
-        return MealWithFoodsResponse.withoutNutrition(meal, foodsByMeal.getOrDefault(meal.getId(), List.of()));
+        Map<Long, MealLog> logsByMeal = buildMealLogs(List.of(mealId));
+        return MealWithFoodsResponse.withNutrition(
+                meal,
+                foodsByMeal.getOrDefault(meal.getId(), List.of()),
+                logsByMeal.get(meal.getId())
+        );
     }
 
     /**
@@ -136,8 +149,8 @@ public class MealService {
     public void deleteMealFood(Long memberId, Long mealFoodId) {
         MealFoodContext context = loadMealFoodContext(mealFoodId, memberId);
 
-        adjustNutrition(context.meal(), Meal.reverseDelta(Meal.nutritionDelta(context.food(), context.mealFood().getQuantity())));
-        mealLogRepository.upsertNutrition(MealLog.from(context.meal(), context.food(), context.mealFood().getQuantity()).reverseDelta());
+        adjustNutrition(context.meal(), Meal.reverseDelta(Meal.nutritionDelta(context.food(), context.mealFood().getIntake())));
+        mealLogRepository.upsertNutrition(MealLog.from(context.meal(), context.food(), context.mealFood().getIntake()).reverseDelta());
 
         mealFoodRepository.deleteById(mealFoodId);
     }
@@ -157,27 +170,33 @@ public class MealService {
         // 요청값이 없으면 기존 값 유지
         MealFood existing = context.mealFood();
         Food oldFood = context.food();
-        BigDecimal oldQuantity = existing.getQuantity();
+        BigDecimal oldIntake = existing.getIntake();
 
         Food newFood = request.getFoodId() != null
                 ? foodRepository.findById(request.getFoodId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "음식 정보를 찾을 수 없습니다."))
                 : oldFood;
-        BigDecimal newQuantity = request.getQuantity() != null ? request.getQuantity() : oldQuantity;
+        BigDecimal newIntake = request.getIntake() != null ? request.getIntake() : oldIntake;
         String newUnit = request.getUnit() != null ? request.getUnit() : existing.getUnit();
 
         // 기존 영양 차감
-        adjustNutrition(context.meal(), Meal.reverseDelta(Meal.nutritionDelta(oldFood, oldQuantity)));
-        mealLogRepository.upsertNutrition(MealLog.from(context.meal(), oldFood, oldQuantity).reverseDelta());
+        adjustNutrition(context.meal(), Meal.reverseDelta(Meal.nutritionDelta(oldFood, oldIntake)));
+        mealLogRepository.upsertNutrition(MealLog.from(context.meal(), oldFood, oldIntake).reverseDelta());
 
         // 신규 값 적용
-        existing.update(newFood.getId(), newQuantity, newUnit);
+        existing.update(newFood.getId(), newIntake, newUnit);
         mealFoodRepository.update(existing);
-        adjustNutrition(context.meal(), Meal.nutritionDelta(newFood, newQuantity));
-        mealLogRepository.upsertNutrition(MealLog.from(context.meal(), newFood, newQuantity));
+        adjustNutrition(context.meal(), Meal.nutritionDelta(newFood, newIntake));
+        mealLogRepository.upsertNutrition(MealLog.from(context.meal(), newFood, newIntake));
 
-        Map<Long, List<MealFoodResponse>> foodsByMeal = buildMealFoodResponses(List.of(context.meal().getId()));
-        return MealWithFoodsResponse.withNutrition(context.meal(), foodsByMeal.getOrDefault(context.meal().getId(), List.of()));
+        Long updatedMealId = context.meal().getId();
+        Map<Long, List<MealFoodResponse>> foodsByMeal = buildMealFoodResponses(List.of(updatedMealId));
+        Map<Long, MealLog> logsByMeal = buildMealLogs(List.of(updatedMealId));
+        return MealWithFoodsResponse.withNutrition(
+                context.meal(),
+                foodsByMeal.getOrDefault(updatedMealId, List.of()),
+                logsByMeal.get(updatedMealId)
+        );
     }
 
     // -------------------------------------  이하 private  ---------------------------------------
@@ -218,6 +237,18 @@ public class MealService {
         for (MealFoodWithFood row : rows) {
             MealFoodResponse from = MealFoodResponse.from(row.getMealFood(), row.getFood());
             map.computeIfAbsent(row.getMealFood().getMealId(), k -> new ArrayList<>()).add(from);
+        }
+        return map;
+    }
+
+    private Map<Long, MealLog> buildMealLogs(List<Long> mealIds) {
+        if (mealIds.isEmpty()) {
+            return Map.of();
+        }
+        List<MealLog> logs = mealLogRepository.findByMealIds(mealIds);
+        Map<Long, MealLog> map = new HashMap<>();
+        for (MealLog log : logs) {
+            map.put(log.getMealId(), log);
         }
         return map;
     }
