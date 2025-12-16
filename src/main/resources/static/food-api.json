@@ -1,0 +1,47 @@
+{
+  "baseUrl": "http://localhost:8080",
+  "auth": { "type": "bearer", "header": "Authorization", "format": "Bearer <token>" },
+  "protectedEndpoints": [
+    {
+      "name": "음식 검색 (부분 일치)",
+      "method": "GET",
+      "path": "/foods/search",
+      "query": { "name": "국밥", "vendor": "할매" },
+      "notes": "name 또는 vendor 중 최소 1개를 전달. 대소문자 무시, 부분 문자열 매칭.",
+      "response": [
+        {
+          "id": 101,
+          "standard": 100,
+          "name": "할매 소고기국밥",
+          "kcal": 550.0,
+          "protein": 25.0,
+          "fat": 18.0,
+          "saturatedFat": 6.0,
+          "transFat": 0.0,
+          "carbohydrates": 70.0,
+          "sugar": 3.0,
+          "natrium": 1800.0,
+          "cholesterol": 60.0,
+          "foodWeight": 500.0,
+          "vendor": "할매국밥"
+        },
+        {
+          "id": 102,
+          "standard": 100,
+          "name": "할매 뼈해장국밥",
+          "kcal": 600.0,
+          "protein": 30.0,
+          "fat": 20.0,
+          "saturatedFat": 7.0,
+          "transFat": 0.0,
+          "carbohydrates": 72.0,
+          "sugar": 4.0,
+          "natrium": 1900.0,
+          "cholesterol": 70.0,
+          "foodWeight": 520.0,
+          "vendor": "할매국밥"
+        }
+      ]
+    }
+  ]
+}

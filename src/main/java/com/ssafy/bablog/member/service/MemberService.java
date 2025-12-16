@@ -8,6 +8,7 @@ import com.ssafy.bablog.member.repository.MemberRepository;
 import com.ssafy.bablog.security.jwt.JwtTokenProvider;
 import com.ssafy.bablog.security.MemberPrincipal;
 import com.ssafy.bablog.security.jwt.TokenBlacklistService;
+import com.ssafy.bablog.member_nutrient.service.MemberNutrientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,6 +29,7 @@ public class MemberService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final TokenBlacklistService tokenBlacklistService;
+    private final MemberNutrientService memberNutrientService;
 
     /**
      * 회원 가입
@@ -49,6 +51,7 @@ public class MemberService {
                 .build();
 
         memberRepository.save(member);
+        memberNutrientService.createIfPossible(member);
     }
 
     /**

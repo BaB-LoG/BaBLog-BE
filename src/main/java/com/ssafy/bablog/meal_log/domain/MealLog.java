@@ -36,20 +36,20 @@ public class MealLog {
     // 식단에 음식 추가 시 이를 meal_log에 반영하기 위해 만드는 객체
     // 실제 meal_log에 데이터로 들어가는 meal_log가 아니라
     // meal_log에 더해지기 위한 meal_log를 만드는 메서드.
-    public static MealLog from(Meal meal, Food food, BigDecimal quantity) {
+    public static MealLog from(Meal meal, Food food, BigDecimal intake) {
         return MealLog.builder()
                 .mealId(meal.getId())
                 .memberId(meal.getMemberId())
                 .loggedAt(meal.getMealDate().atStartOfDay())
-                .kcal(NutritionCalculator.scaleNutrient(food.getKcal(), food, quantity))
-                .protein(NutritionCalculator.scaleNutrient(food.getProtein(), food, quantity))
-                .fat(NutritionCalculator.scaleNutrient(food.getFat(), food, quantity))
-                .saturatedFat(NutritionCalculator.scaleNutrient(food.getSaturatedFat(), food, quantity))
-                .transFat(NutritionCalculator.scaleNutrient(food.getTransFat(), food, quantity))
-                .carbohydrates(NutritionCalculator.scaleNutrient(food.getCarbohydrates(), food, quantity))
-                .sugar(NutritionCalculator.scaleNutrient(food.getSugar(), food, quantity))
-                .natrium(NutritionCalculator.scaleNutrient(food.getNatrium(), food, quantity))
-                .cholesterol(NutritionCalculator.scaleNutrient(food.getCholesterol(), food, quantity))
+                .kcal(NutritionCalculator.scaleNutrient(food.getKcal(), food, intake))
+                .protein(NutritionCalculator.scaleNutrient(food.getProtein(), food, intake))
+                .fat(NutritionCalculator.scaleNutrient(food.getFat(), food, intake))
+                .saturatedFat(NutritionCalculator.scaleNutrient(food.getSaturatedFat(), food, intake))
+                .transFat(NutritionCalculator.scaleNutrient(food.getTransFat(), food, intake))
+                .carbohydrates(NutritionCalculator.scaleNutrient(food.getCarbohydrates(), food, intake))
+                .sugar(NutritionCalculator.scaleNutrient(food.getSugar(), food, intake))
+                .natrium(NutritionCalculator.scaleNutrient(food.getNatrium(), food, intake))
+                .cholesterol(NutritionCalculator.scaleNutrient(food.getCholesterol(), food, intake))
                 .build();
     }
 

@@ -1,0 +1,217 @@
+{
+  "baseUrl": "http://localhost:8080",
+  "auth": { "type": "bearer", "header": "Authorization", "format": "Bearer <token>" },
+  "protectedEndpoints": [
+    {
+      "name": "하루 기본 식단 생성 (테스트용)",
+      "method": "POST",
+      "path": "/meals/test-api",
+      "request": null,
+      "response": null,
+      "notes": "현재 로그인한 사용자의 오늘 날짜(BREAKFAST/LUNCH/DINNER/SNACK) 식단을 생성합니다. 이미 있으면 건너뜁니다."
+    },
+    {
+      "name": "식단에 음식 추가",
+      "method": "POST",
+      "path": "/meals/foods",
+      "request": {
+        "mealType": "BREAKFAST",
+        "mealDate": "2025-02-01",
+        "foodId": 10,
+        "intake": 120.0,
+        "unit": "g"
+      },
+      "required": ["mealType", "mealDate", "foodId", "intake"],
+      "response": {
+        "meal": {
+          "id": 21,
+          "mealType": "BREAKFAST",
+          "mealDate": "2025-02-01",
+          "nutrition": {
+            "kcal": 320.5,
+            "protein": 20.3,
+            "fat": 8.1,
+            "saturatedFat": 2.3,
+            "transFat": 0.0,
+            "carbohydrates": 40.2,
+            "sugar": 5.4,
+            "natrium": 650.0,
+            "cholesterol": 30.0
+          },
+          "foods": null
+        },
+        "mealFood": {
+          "mealId": 21,
+          "foodId": 10,
+          "mealFoodId": 55,
+          "standard": 100,
+          "name": "닭가슴살 구이",
+          "intake": 120.0,
+          "unit": "g",
+          "kcal": 320.5,
+          "protein": 20.3,
+          "fat": 8.1,
+          "carbohydrates": 40.2,
+          "sugar": 5.4,
+          "natrium": 650.0,
+          "cholesterol": 30.0,
+          "saturatedFat": 2.3,
+          "transFat": 0.0,
+          "vendor": "브랜드A"
+        }
+      }
+    },
+    {
+      "name": "날짜별 식단 목록 조회",
+      "method": "GET",
+      "path": "/meals",
+      "query": { "date": "2025-02-01" },
+      "response": [
+        {
+          "id": 21,
+          "mealType": "BREAKFAST",
+          "mealDate": "2025-02-01",
+          "nutrition": {
+            "kcal": 320.5,
+            "protein": 20.3,
+            "fat": 8.1,
+            "saturatedFat": 2.3,
+            "transFat": 0.0,
+            "carbohydrates": 40.2,
+            "sugar": 5.4,
+            "natrium": 650.0,
+            "cholesterol": 30.0
+          },
+          "foods": [
+            {
+              "mealId": 21,
+              "foodId": 10,
+              "mealFoodId": 55,
+              "standard": 100,
+              "name": "닭가슴살 구이",
+              "intake": 120.0,
+              "unit": "g",
+              "kcal": 320.5,
+              "protein": 20.3,
+              "fat": 8.1,
+              "carbohydrates": 40.2,
+              "sugar": 5.4,
+              "natrium": 650.0,
+              "cholesterol": 30.0,
+              "saturatedFat": 2.3,
+              "transFat": 0.0,
+              "vendor": "브랜드A"
+            }
+          ]
+        },
+        {
+          "id": 22,
+          "mealType": "LUNCH",
+          "mealDate": "2025-02-01",
+          "nutrition": {
+            "kcal": 0,
+            "protein": 0,
+            "fat": 0,
+            "saturatedFat": 0,
+            "transFat": 0,
+            "carbohydrates": 0,
+            "sugar": 0,
+            "natrium": 0,
+            "cholesterol": 0
+          },
+          "foods": []
+        }
+      ]
+    },
+    {
+      "name": "식단 단건 조회",
+      "method": "GET",
+      "path": "/meals/{mealId}",
+      "pathParams": { "mealId": 21 },
+      "response": {
+        "id": 21,
+        "mealType": "BREAKFAST",
+        "mealDate": "2025-02-01",
+        "nutrition": null,
+        "foods": [
+          {
+            "mealId": 21,
+            "foodId": 10,
+            "mealFoodId": 55,
+            "standard": 100,
+            "name": "닭가슴살 구이",
+            "intake": 120.0,
+            "unit": "g",
+            "kcal": 320.5,
+            "protein": 20.3,
+            "fat": 8.1,
+            "carbohydrates": 40.2,
+            "sugar": 5.4,
+            "natrium": 650.0,
+            "cholesterol": 30.0,
+            "saturatedFat": 2.3,
+            "transFat": 0.0,
+            "vendor": "브랜드A"
+          }
+        ]
+      }
+    },
+    {
+      "name": "식단에 추가된 음식 삭제",
+      "method": "DELETE",
+      "path": "/meals/foods/{mealFoodId}",
+      "pathParams": { "mealFoodId": 55 },
+      "response": null
+    },
+    {
+      "name": "식단에 추가된 음식 수정",
+      "method": "PATCH",
+      "path": "/meals/foods/{mealFoodId}",
+      "pathParams": { "mealFoodId": 55 },
+      "request": {
+        "mealId": 21,
+        "foodId": 11,
+        "intake": 180.0,
+        "unit": "g"
+      },
+      "required": ["mealId"],
+      "response": {
+        "id": 21,
+        "mealType": "BREAKFAST",
+        "mealDate": "2025-02-01",
+        "nutrition": {
+          "kcal": 450.0,
+          "protein": 35.0,
+          "fat": 12.0,
+          "saturatedFat": 3.5,
+          "transFat": 0.0,
+          "carbohydrates": 50.0,
+          "sugar": 8.0,
+          "natrium": 900.0,
+          "cholesterol": 40.0
+        },
+        "foods": [
+          {
+            "mealId": 21,
+            "foodId": 11,
+            "mealFoodId": 55,
+            "standard": 100,
+            "name": "연어 스테이크",
+            "intake": 180.0,
+            "unit": "g",
+            "kcal": 450.0,
+            "protein": 35.0,
+            "fat": 12.0,
+            "carbohydrates": 50.0,
+            "sugar": 8.0,
+            "natrium": 900.0,
+            "cholesterol": 40.0,
+            "saturatedFat": 3.5,
+            "transFat": 0.0,
+            "vendor": "브랜드B"
+          }
+        ]
+      }
+    }
+  ]
+}
