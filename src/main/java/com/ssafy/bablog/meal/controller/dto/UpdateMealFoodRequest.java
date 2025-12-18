@@ -19,8 +19,8 @@ public class UpdateMealFoodRequest {
 
     private Long foodId;
 
-    @DecimalMin(value = "0.0", inclusive = false, message = "수량은 0보다 커야 합니다.")
-    private BigDecimal quantity;
+    @DecimalMin(value = "0.0", inclusive = false, message = "섭취량은 0보다 커야 합니다.")
+    private BigDecimal intake;
 
     private String unit;
 }

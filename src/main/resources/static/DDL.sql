@@ -22,7 +22,26 @@ CREATE TABLE `member_nutrient` (
   `carbohydrates` decimal(6,2),
   `sugar` decimal(6,2),
   `natrium` decimal(8,2),
-  `cholesterol` decimal(6,2)
+  `cholesterol` decimal(6,2),
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE `member_nutrient_daily` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `member_id` bigint NOT NULL,
+  `target_date` date NOT NULL,
+  `kcal` decimal(6,2),
+  `protein` decimal(6,2),
+  `fat` decimal(6,2),
+  `saturated_fat` decimal(6,2),
+  `trans_fat` decimal(6,2),
+  `carbohydrates` decimal(6,2),
+  `sugar` decimal(6,2),
+  `natrium` decimal(8,2),
+  `cholesterol` decimal(6,2),
+  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
+  `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
 );
 
 CREATE TABLE `meal_log` (

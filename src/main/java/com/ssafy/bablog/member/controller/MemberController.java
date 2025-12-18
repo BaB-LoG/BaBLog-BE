@@ -36,7 +36,7 @@ public class MemberController {
     /**
      * 로그아웃
      */
-    @GetMapping("/logout")
+    @PostMapping("/logout")
     public ResponseEntity<Void> logout(@RequestHeader(value = "Authorization", required = false) String authorizationHeader) {
         memberService.logout(authorizationHeader);
         return ResponseEntity.noContent().build();

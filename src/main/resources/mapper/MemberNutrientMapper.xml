@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.bablog.member_nutrient.repository.mapper.MemberNutrientMapper">
+
+    <resultMap id="MemberNutrientResultMap" type="com.ssafy.bablog.member_nutrient.domain.MemberNutrient">
+        <id property="id" column="id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="kcal" column="kcal"/>
+        <result property="protein" column="protein"/>
+        <result property="fat" column="fat"/>
+        <result property="saturatedFat" column="saturated_fat"/>
+        <result property="transFat" column="trans_fat"/>
+        <result property="carbohydrates" column="carbohydrates"/>
+        <result property="sugar" column="sugar"/>
+        <result property="natrium" column="natrium"/>
+        <result property="cholesterol" column="cholesterol"/>
+    </resultMap>
+
+    <select id="findByMemberId" parameterType="long" resultMap="MemberNutrientResultMap">
+        SELECT id, member_id, kcal, protein, fat, saturated_fat, trans_fat,
+               carbohydrates, sugar, natrium, cholesterol
+        FROM member_nutrient
+        WHERE member_id = #{memberId}
+        LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="com.ssafy.bablog.member_nutrient.domain.MemberNutrient" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO member_nutrient (member_id, kcal, protein, fat, saturated_fat, trans_fat, carbohydrates, sugar, natrium, cholesterol)
+        VALUES (#{memberId}, #{kcal}, #{protein}, #{fat}, #{saturatedFat}, #{transFat}, #{carbohydrates}, #{sugar}, #{natrium}, #{cholesterol})
+    </insert>
+
+    <update id="update" parameterType="com.ssafy.bablog.member_nutrient.domain.MemberNutrient">
+        UPDATE member_nutrient
+        SET kcal = #{kcal},
+            protein = #{protein},
+            fat = #{fat},
+            saturated_fat = #{saturatedFat},
+            trans_fat = #{transFat},
+            carbohydrates = #{carbohydrates},
+            sugar = #{sugar},
+            natrium = #{natrium},
+            cholesterol = #{cholesterol}
+        WHERE member_id = #{memberId}
+    </update>
+</mapper>

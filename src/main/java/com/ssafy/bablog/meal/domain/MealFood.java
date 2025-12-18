@@ -16,14 +16,14 @@ public class MealFood {
     private Long id;
     private Long mealId;
     private Long foodId;
-    private BigDecimal quantity;
+    private BigDecimal intake; // 섭취량(g 등 단위)
     private String unit;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public void update(Long newFoodId, BigDecimal newQuantity, String newUnit) {
+    public void update(Long newFoodId, BigDecimal newIntake, String newUnit) {
         this.foodId = newFoodId;
-        this.quantity = newQuantity;
+        this.intake = newIntake;
         this.unit = newUnit;
     }
 }

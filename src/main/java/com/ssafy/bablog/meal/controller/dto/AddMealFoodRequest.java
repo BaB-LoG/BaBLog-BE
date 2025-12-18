@@ -27,8 +27,8 @@ public class AddMealFoodRequest {
     private Long foodId;
 
     @NotNull
-    @DecimalMin(value = "0.01", message = "수량은 0보다 커야 합니다.")
-    private BigDecimal quantity;
+    @DecimalMin(value = "0.01", message = "섭취량은 0보다 커야 합니다.")
+    private BigDecimal intake; // 그램 등 절대량
 
     private String unit;
 }

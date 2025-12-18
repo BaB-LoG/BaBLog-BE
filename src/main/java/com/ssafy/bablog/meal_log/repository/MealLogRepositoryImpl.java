@@ -20,4 +20,12 @@ public class MealLogRepositoryImpl implements MealLogRepository {
         mealLogMapper.upsert(mealLog);
     }
 
+    @Override
+    public java.util.List<MealLog> findByMealIds(java.util.List<Long> mealIds) {
+        if (mealIds == null || mealIds.isEmpty()) {
+            return java.util.List.of();
+        }
+        return mealLogMapper.findByMealIds(mealIds);
+    }
+
 }

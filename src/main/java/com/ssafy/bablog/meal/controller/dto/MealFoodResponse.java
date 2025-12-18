@@ -21,7 +21,7 @@ public class MealFoodResponse {
     private Long mealFoodId;
     private BigDecimal standard;
     private String name;
-    private BigDecimal quantity;
+    private BigDecimal intake;
     private String unit;
     private BigDecimal kcal;
     private BigDecimal protein;
@@ -41,17 +41,17 @@ public class MealFoodResponse {
                 mealFood.getId(),
                 food.getStandard(),
                 food.getName(),
-                mealFood.getQuantity(),
+                mealFood.getIntake(),
                 mealFood.getUnit(),
-                NutritionCalculator.scaleNutrient(food.getKcal(), food, mealFood.getQuantity()),
-                NutritionCalculator.scaleNutrient(food.getProtein(), food, mealFood.getQuantity()),
-                NutritionCalculator.scaleNutrient(food.getFat(), food, mealFood.getQuantity()),
-                NutritionCalculator.scaleNutrient(food.getCarbohydrates(), food, mealFood.getQuantity()),
-                NutritionCalculator.scaleNutrient(food.getSugar(), food, mealFood.getQuantity()),
-                NutritionCalculator.scaleNutrient(food.getNatrium(), food, mealFood.getQuantity()),
-                NutritionCalculator.scaleNutrient(food.getCholesterol(), food, mealFood.getQuantity()),
-                NutritionCalculator.scaleNutrient(food.getSaturatedFat(), food, mealFood.getQuantity()),
-                NutritionCalculator.scaleNutrient(food.getTransFat(), food, mealFood.getQuantity()),
+                NutritionCalculator.scaleNutrient(food.getKcal(), food, mealFood.getIntake()),
+                NutritionCalculator.scaleNutrient(food.getProtein(), food, mealFood.getIntake()),
+                NutritionCalculator.scaleNutrient(food.getFat(), food, mealFood.getIntake()),
+                NutritionCalculator.scaleNutrient(food.getCarbohydrates(), food, mealFood.getIntake()),
+                NutritionCalculator.scaleNutrient(food.getSugar(), food, mealFood.getIntake()),
+                NutritionCalculator.scaleNutrient(food.getNatrium(), food, mealFood.getIntake()),
+                NutritionCalculator.scaleNutrient(food.getCholesterol(), food, mealFood.getIntake()),
+                NutritionCalculator.scaleNutrient(food.getSaturatedFat(), food, mealFood.getIntake()),
+                NutritionCalculator.scaleNutrient(food.getTransFat(), food, mealFood.getIntake()),
                 food.getVendor()
         );
     }
