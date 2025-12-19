@@ -6,7 +6,10 @@ import com.ssafy.bablog.meal.controller.dto.AddMealFoodRequest;
 import com.ssafy.bablog.meal.controller.dto.AddMealFoodResponse;
 import com.ssafy.bablog.meal.controller.dto.MealFoodResponse;
 import com.ssafy.bablog.meal.controller.dto.MealResponse;
+import com.ssafy.bablog.meal.controller.dto.MealSummaryResponse;
 import com.ssafy.bablog.meal.controller.dto.MealWithFoodsResponse;
+import com.ssafy.bablog.meal.controller.dto.DashboardSummaryResponse;
+import com.ssafy.bablog.meal.controller.dto.NutritionResponse;
 import com.ssafy.bablog.meal.controller.dto.UpdateMealFoodRequest;
 import com.ssafy.bablog.meal.domain.Meal;
 import com.ssafy.bablog.meal.domain.MealFood;
@@ -16,6 +19,7 @@ import com.ssafy.bablog.meal.repository.MealRepository;
 import com.ssafy.bablog.meal.repository.mapper.MealFoodWithFood;
 import com.ssafy.bablog.meal_log.domain.MealLog;
 import com.ssafy.bablog.meal_log.repository.MealLogRepository;
+import com.ssafy.bablog.member_nutrient.domain.MemberNutrientDaily;
 import com.ssafy.bablog.member_nutrient.service.MemberNutrientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -199,6 +203,68 @@ public class MealService {
         );
     }
 
+    /**
+     * 대시보드용 식단 요약
+     */
+    @Transactional(readOnly = true)
+    public DashboardSummaryResponse getDailySummary(Long memberId, LocalDate mealDate) {
+        List<Meal> meals = mealRepository.findByMemberAndDate(memberId, mealDate);
+        Map<MealType, Meal> mealsByType = new HashMap<>();
+        for (Meal meal : meals) {
+            mealsByType.put(meal.getMealType(), meal);
+        }
+
+        List<Long> mealIds = meals.stream().map(Meal::getId).toList();
+        Map<Long, List<MealFoodWithFood>> foodsByMeal = buildMealFoods(mealIds);
+
+        NutritionResponse totals = new NutritionResponse(
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                BigDecimal.ZERO
+        );
+        for (Meal meal : meals) {
+            totals.setKcal(totals.getKcal().add(orZero(meal.getKcal())));
+            totals.setProtein(totals.getProtein().add(orZero(meal.getProtein())));
+            totals.setFat(totals.getFat().add(orZero(meal.getFat())));
+            totals.setSaturatedFat(totals.getSaturatedFat().add(orZero(meal.getSaturatedFat())));
+            totals.setTransFat(totals.getTransFat().add(orZero(meal.getTransFat())));
+            totals.setCarbohydrates(totals.getCarbohydrates().add(orZero(meal.getCarbohydrates())));
+            totals.setSugar(totals.getSugar().add(orZero(meal.getSugar())));
+            totals.setNatrium(totals.getNatrium().add(orZero(meal.getNatrium())));
+            totals.setCholesterol(totals.getCholesterol().add(orZero(meal.getCholesterol())));
+        }
+
+        MemberNutrientDaily dailyTarget = memberNutrientService.getDaily(memberId, mealDate);
+        NutritionResponse targets = NutritionResponse.fromMemberNutrientDaily(dailyTarget);
+
+        List<MealSummaryResponse> summaries = new ArrayList<>();
+        for (MealType mealType : MealType.values()) {
+            Meal meal = mealsByType.get(mealType);
+            if (meal == null) {
+                summaries.add(new MealSummaryResponse(mealType, mealDate, 0, null, BigDecimal.ZERO));
+                continue;
+            }
+            List<MealFoodWithFood> foods = foodsByMeal.getOrDefault(meal.getId(), List.of());
+            int foodCount = foods.size();
+            String representative = foodCount > 0 ? foods.get(0).getFood().getName() : null;
+            summaries.add(new MealSummaryResponse(
+                    mealType,
+                    meal.getMealDate(),
+                    foodCount,
+                    representative,
+                    orZero(meal.getKcal())
+            ));
+        }
+
+        return new DashboardSummaryResponse(mealDate, totals, targets, summaries);
+    }
+
     // -------------------------------------  이하 private  ---------------------------------------
 
     private void ensureMealOwner(Meal meal, Long memberId) {
@@ -241,6 +307,19 @@ public class MealService {
         return map;
     }
 
+    private Map<Long, List<MealFoodWithFood>> buildMealFoods(List<Long> mealIds) {
+        if (mealIds.isEmpty()) {
+            return Map.of();
+        }
+
+        List<MealFoodWithFood> rows = mealFoodRepository.findByMealIdsWithFood(mealIds);
+        Map<Long, List<MealFoodWithFood>> map = new HashMap<>();
+        for (MealFoodWithFood row : rows) {
+            map.computeIfAbsent(row.getMealFood().getMealId(), k -> new ArrayList<>()).add(row);
+        }
+        return map;
+    }
+
     private Map<Long, MealLog> buildMealLogs(List<Long> mealIds) {
         if (mealIds.isEmpty()) {
             return Map.of();
@@ -257,5 +336,9 @@ public class MealService {
      * meal_food 수정/삭제 시 사용하는 조회 컨텍스트
      */
     private record MealFoodContext(Meal meal, MealFood mealFood, Food food) {
+    }
+
+    private BigDecimal orZero(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 }

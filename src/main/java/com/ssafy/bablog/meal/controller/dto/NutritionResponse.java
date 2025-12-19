@@ -2,6 +2,7 @@ package com.ssafy.bablog.meal.controller.dto;
 
 import com.ssafy.bablog.meal.domain.Meal;
 import com.ssafy.bablog.meal_log.domain.MealLog;
+import com.ssafy.bablog.member_nutrient.domain.MemberNutrientDaily;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,6 +54,22 @@ public class NutritionResponse {
                         m.getSugar(),
                         m.getNatrium(),
                         m.getCholesterol()
+                ))
+                .orElse(new NutritionResponse(null, null, null, null, null, null, null, null, null));
+    }
+
+    public static NutritionResponse fromMemberNutrientDaily(MemberNutrientDaily daily) {
+        return Optional.ofNullable(daily)
+                .map(d -> new NutritionResponse(
+                        d.getKcal(),
+                        d.getProtein(),
+                        d.getFat(),
+                        d.getSaturatedFat(),
+                        d.getTransFat(),
+                        d.getCarbohydrates(),
+                        d.getSugar(),
+                        d.getNatrium(),
+                        d.getCholesterol()
                 ))
                 .orElse(new NutritionResponse(null, null, null, null, null, null, null, null, null));
     }
