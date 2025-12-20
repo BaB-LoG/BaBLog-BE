@@ -38,17 +38,19 @@ public class ReportAiService {
           "grade": "매우 우수|우수|보통|개선 필요|집중 개선 필요",
           "consistencyScore": 0-100 정수,
           "summary": "요약 2~3문장",
+          "patternSummary": "패턴 요약 1문장",
+          "bestDay": "YYYY-MM-DD",
+          "bestReason": "bestDay가 된 이유 1문장",
+          "worstDay": "YYYY-MM-DD",
+          "worstReason": "worstDay가 된 이유 1문장",
+          "nextWeekFocus": "다음 주 집중 포인트 1문장",
           "highlights": ["잘한 점 2~3개"],
           "improvements": ["개선점 2~3개"],
           "recommendations": ["다음 주 실행 계획 2~3개"],
-          "riskFlags": ["리스크 0~3개"],
-          "trend": {
-            "patternSummary": "패턴 요약 1문장",
-            "bestDay": "YYYY-MM-DD",
-            "worstDay": "YYYY-MM-DD",
-            "nextWeekFocus": "다음 주 집중 포인트 1문장"
-          }
+          "riskFlags": ["리스크 0~3개"]
         }
+        bestDay와 worstDay는 입력 기간 내의 날짜로 지정한다.
+        bestReason과 worstReason은 해당 날짜의 이유를 간결하게 설명한다.
         recommendations는 반드시 '언제/무엇/얼마'가 들어간 실행형 문장으로 작성한다.
         개선점은 원인과 결과를 1문장에 포함한다.
         """;

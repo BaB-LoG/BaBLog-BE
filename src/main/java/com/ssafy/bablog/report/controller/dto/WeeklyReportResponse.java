@@ -16,11 +16,18 @@ public class WeeklyReportResponse {
     private Integer score;
     private String grade;
     private String summary;
+    private String patternSummary;
+    private LocalDate bestDay;
+    private String bestReason;
+    private LocalDate worstDay;
+    private String worstReason;
+    private String nextWeekFocus;
     private List<String> highlights;
     private List<String> improvements;
     private List<String> recommendations;
     private Map<String, Object> trend;
     private List<String> riskFlags;
     private Integer consistencyScore;
+    private List<WeeklyDailyScoreResponse> dailyScores;
     private LocalDateTime updatedAt;
 }

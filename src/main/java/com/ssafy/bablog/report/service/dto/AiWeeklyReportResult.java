@@ -15,6 +15,12 @@ public class AiWeeklyReportResult {
     private String grade;
     private Integer consistencyScore;
     private String summary;
+    private String patternSummary;
+    private String bestDay;
+    private String bestReason;
+    private String worstDay;
+    private String worstReason;
+    private String nextWeekFocus;
     private List<String> highlights;
     private List<String> improvements;
     private List<String> recommendations;

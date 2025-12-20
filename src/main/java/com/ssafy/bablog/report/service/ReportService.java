@@ -16,8 +16,10 @@ import com.ssafy.bablog.report.repository.DailyReportRepository;
 import com.ssafy.bablog.report.repository.WeeklyReportRepository;
 import com.ssafy.bablog.report.controller.dto.DailyReportResponse;
 import com.ssafy.bablog.report.controller.dto.WeeklyReportResponse;
+import com.ssafy.bablog.report.controller.dto.WeeklyDailyScoreResponse;
 import com.ssafy.bablog.report.service.dto.AiDailyReportResult;
 import com.ssafy.bablog.report.service.dto.AiWeeklyReportResult;
+import com.ssafy.bablog.report.service.dto.DailyScorePoint;
 import com.ssafy.bablog.report.service.dto.NutritionSnapshot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -104,6 +106,8 @@ public class ReportService {
         }
 
         AiWeeklyReportResult aiResult = requestWeeklyAiReport(buildWeeklyPrompt(member, startDate, endDate, dailyMetrics));
+        LocalDate bestDay = normalizeDate(parseDate(aiResult.getBestDay()), startDate, endDate);
+        LocalDate worstDay = normalizeDate(parseDate(aiResult.getWorstDay()), startDate, endDate);
 
         WeeklyReport report = WeeklyReport.builder()
                 .memberId(memberId)
@@ -112,10 +116,16 @@ public class ReportService {
                 .startDate(startDate)
                 .endDate(endDate)
                 .summary(aiResult.getSummary())
+                .patternSummary(aiResult.getPatternSummary())
+                .bestDay(bestDay)
+                .bestReason(aiResult.getBestReason())
+                .worstDay(worstDay)
+                .worstReason(aiResult.getWorstReason())
+                .nextWeekFocus(aiResult.getNextWeekFocus())
                 .highlights(toJson(aiResult.getHighlights()))
                 .improvements(toJson(aiResult.getImprovements()))
                 .recommendations(toJson(aiResult.getRecommendations()))
-                .trend(toJson(aiResult.getTrend()))
+                .trend(toJson(buildTrendMap(aiResult, bestDay, worstDay)))
                 .riskFlags(toJson(aiResult.getRiskFlags()))
                 .consistencyScore(aiResult.getConsistencyScore())
                 .reportVersion(REPORT_VERSION)
@@ -149,18 +159,37 @@ public class ReportService {
     }
 
     public WeeklyReportResponse toWeeklyResponse(WeeklyReport report) {
+        List<DailyScorePoint> scores = dailyReportRepository.findScoresByMemberAndRange(
+                report.getMemberId(), report.getStartDate(), report.getEndDate());
+        List<WeeklyDailyScoreResponse> dailyScores = scores.stream()
+                .map(score -> WeeklyDailyScoreResponse.builder()
+                        .date(score.getDate())
+                        .score(score.getScore())
+                        .build())
+                .toList();
+        Map<String, Object> trendMap = parseJson(report.getTrend(), new TypeReference<Map<String, Object>>() {}, null);
+        if (trendMap == null || trendMap.isEmpty()) {
+            trendMap = buildTrendMap(report);
+        }
         return WeeklyReportResponse.builder()
                 .startDate(report.getStartDate())
                 .endDate(report.getEndDate())
                 .score(report.getAiScore())
                 .grade(report.getGrade())
                 .summary(report.getSummary())
+                .patternSummary(report.getPatternSummary())
+                .bestDay(report.getBestDay())
+                .bestReason(report.getBestReason())
+                .worstDay(report.getWorstDay())
+                .worstReason(report.getWorstReason())
+                .nextWeekFocus(report.getNextWeekFocus())
                 .highlights(parseJson(report.getHighlights(), new TypeReference<List<String>>() {}, List.of()))
                 .improvements(parseJson(report.getImprovements(), new TypeReference<List<String>>() {}, List.of()))
                 .recommendations(parseJson(report.getRecommendations(), new TypeReference<List<String>>() {}, List.of()))
-                .trend(parseJson(report.getTrend(), new TypeReference<Map<String, Object>>() {}, Map.of()))
+                .trend(trendMap == null ? Map.of() : trendMap)
                 .riskFlags(parseJson(report.getRiskFlags(), new TypeReference<List<String>>() {}, List.of()))
                 .consistencyScore(report.getConsistencyScore())
+                .dailyScores(dailyScores)
                 .updatedAt(report.getUpdatedAt())
                 .build();
     }
@@ -332,6 +361,12 @@ public class ReportService {
             fallback.setGrade("집중 개선 필요");
             fallback.setConsistencyScore(0);
             fallback.setSummary("주간 식단 데이터를 충분히 수집하지 못했습니다.");
+            fallback.setPatternSummary("주간 패턴을 분석할 데이터가 부족합니다.");
+            fallback.setBestDay(null);
+            fallback.setBestReason("기록이 부족해 최고일을 선정할 수 없습니다.");
+            fallback.setWorstDay(null);
+            fallback.setWorstReason("기록이 부족해 최저일을 선정할 수 없습니다.");
+            fallback.setNextWeekFocus("다음 주에는 최소 3일 이상 기록해 보세요.");
             fallback.setHighlights(List.of("기록을 꾸준히 남긴 점이 좋습니다."));
             fallback.setImprovements(List.of("일주일 동안 최소 3일 이상 기록해 보세요."));
             fallback.setRecommendations(List.of("다음 주에는 아침 식사부터 기록하기"));
@@ -383,5 +418,44 @@ public class ReportService {
         map.put("natrium", snapshot.getNatrium());
         map.put("cholesterol", snapshot.getCholesterol());
         return map;
+    }
+
+    private LocalDate parseDate(String raw) {
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        try {
+            return LocalDate.parse(raw);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private Map<String, Object> buildTrendMap(AiWeeklyReportResult result, LocalDate bestDay, LocalDate worstDay) {
+        Map<String, Object> trend = new HashMap<>();
+        trend.put("patternSummary", result.getPatternSummary());
+        trend.put("bestDay", bestDay != null ? bestDay.toString() : null);
+        trend.put("worstDay", worstDay != null ? worstDay.toString() : null);
+        trend.put("nextWeekFocus", result.getNextWeekFocus());
+        return trend;
+    }
+
+    private Map<String, Object> buildTrendMap(WeeklyReport report) {
+        Map<String, Object> trend = new HashMap<>();
+        trend.put("patternSummary", report.getPatternSummary());
+        trend.put("bestDay", report.getBestDay() != null ? report.getBestDay().toString() : null);
+        trend.put("worstDay", report.getWorstDay() != null ? report.getWorstDay().toString() : null);
+        trend.put("nextWeekFocus", report.getNextWeekFocus());
+        return trend;
+    }
+
+    private LocalDate normalizeDate(LocalDate date, LocalDate startDate, LocalDate endDate) {
+        if (date == null) {
+            return null;
+        }
+        if (date.isBefore(startDate) || date.isAfter(endDate)) {
+            return null;
+        }
+        return date;
     }
 }
