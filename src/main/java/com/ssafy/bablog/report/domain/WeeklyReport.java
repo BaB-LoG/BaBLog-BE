@@ -22,6 +22,12 @@ public class WeeklyReport {
     private LocalDate endDate;
     private String grade;
     private String summary;
+    private String patternSummary;
+    private LocalDate bestDay;
+    private String bestReason;
+    private LocalDate worstDay;
+    private String worstReason;
+    private String nextWeekFocus;
     private String highlights;
     private String improvements;
     private String recommendations;

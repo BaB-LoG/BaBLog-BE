@@ -12,6 +12,12 @@
         <result property="endDate" column="end_date"/>
         <result property="grade" column="grade"/>
         <result property="summary" column="summary"/>
+        <result property="patternSummary" column="pattern_summary"/>
+        <result property="bestDay" column="best_day"/>
+        <result property="bestReason" column="best_reason"/>
+        <result property="worstDay" column="worst_day"/>
+        <result property="worstReason" column="worst_reason"/>
+        <result property="nextWeekFocus" column="next_week_focus"/>
         <result property="highlights" column="highlights"/>
         <result property="improvements" column="improvements"/>
         <result property="recommendations" column="recommendations"/>
@@ -26,18 +32,26 @@
     <insert id="upsert" parameterType="com.ssafy.bablog.report.domain.WeeklyReport">
         INSERT INTO weekly_report (
             member_id, ai_score, start_date, end_date, grade,
-            summary, highlights, improvements, recommendations,
+            summary, pattern_summary, best_day, best_reason, worst_day, worst_reason,
+            next_week_focus, highlights, improvements, recommendations,
             trend, risk_flags, consistency_score, report_version
         )
         VALUES (
             #{memberId}, #{aiScore}, #{startDate}, #{endDate}, #{grade},
-            #{summary}, #{highlights}, #{improvements}, #{recommendations},
+            #{summary}, #{patternSummary}, #{bestDay}, #{bestReason}, #{worstDay}, #{worstReason},
+            #{nextWeekFocus}, #{highlights}, #{improvements}, #{recommendations},
             #{trend}, #{riskFlags}, #{consistencyScore}, #{reportVersion}
         )
         ON DUPLICATE KEY UPDATE
             ai_score = VALUES(ai_score),
             grade = VALUES(grade),
             summary = VALUES(summary),
+            pattern_summary = VALUES(pattern_summary),
+            best_day = VALUES(best_day),
+            best_reason = VALUES(best_reason),
+            worst_day = VALUES(worst_day),
+            worst_reason = VALUES(worst_reason),
+            next_week_focus = VALUES(next_week_focus),
             highlights = VALUES(highlights),
             improvements = VALUES(improvements),
             recommendations = VALUES(recommendations),
@@ -50,7 +64,8 @@
 
     <select id="findByMemberAndRange" resultMap="WeeklyReportResultMap">
         SELECT id, member_id, ai_score, start_date, end_date, grade,
-               summary, highlights, improvements, recommendations,
+               summary, pattern_summary, best_day, best_reason, worst_day, worst_reason,
+               next_week_focus, highlights, improvements, recommendations,
                trend, risk_flags, consistency_score, report_version,
                created_at, updated_at
         FROM weekly_report

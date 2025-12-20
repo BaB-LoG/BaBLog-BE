@@ -58,4 +58,13 @@
         LIMIT 1
     </select>
 
+    <select id="findScoresByMemberAndRange" resultType="com.ssafy.bablog.report.service.dto.DailyScorePoint">
+        SELECT report_date AS date,
+               ai_score AS score
+        FROM daily_report
+        WHERE member_id = #{memberId}
+          AND report_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY report_date
+    </select>
+
 </mapper>
