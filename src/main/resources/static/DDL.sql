@@ -127,11 +127,17 @@ CREATE TABLE `goal` (
 CREATE TABLE `daily_report` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `member_id` bigint NOT NULL,
+  `report_date` date NOT NULL,
   `ai_score` integer,
-  `report_date` date,
-  `description` text,
-  `positive_insight` text,
-  `recommendation` text,
+  `grade` varchar(20),
+  `summary` text,
+  `highlights` text,
+  `improvements` text,
+  `recommendations` text,
+  `nutrient_scores` text,
+  `risk_flags` text,
+  `metrics` text,
+  `report_version` varchar(20),
   `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
   `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
 );
@@ -140,11 +146,17 @@ CREATE TABLE `weekly_report` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `member_id` bigint NOT NULL,
   `ai_score` integer,
-  `start_date` date,
-  `end_date` date,
-  `description` text,
-  `positive_insight` text,
-  `recommendation` text,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
+  `grade` varchar(20),
+  `summary` text,
+  `highlights` text,
+  `improvements` text,
+  `recommendations` text,
+  `trend` text,
+  `risk_flags` text,
+  `consistency_score` integer,
+  `report_version` varchar(20),
   `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
   `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
 );
@@ -173,9 +185,9 @@ CREATE INDEX `idx_goal_member_type` ON `goal` (`member_id`, `goal_type`);
 
 CREATE INDEX `idx_goal_member_period` ON `goal` (`member_id`, `start_date`, `end_date`);
 
-CREATE INDEX `idx_daily_report_member_report_date` ON `daily_report` (`member_id`, `report_date`);
+CREATE UNIQUE INDEX `idx_daily_report_member_report_date` ON `daily_report` (`member_id`, `report_date`);
 
-CREATE INDEX `idx_weekly_report_member_period` ON `weekly_report` (`member_id`, `start_date`, `end_date`);
+CREATE UNIQUE INDEX `idx_weekly_report_member_period` ON `weekly_report` (`member_id`, `start_date`, `end_date`);
 
 CREATE UNIQUE INDEX `idx_member_nutrient_daily_member_date` ON `member_nutrient_daily` (`member_id`, `target_date`);
 
