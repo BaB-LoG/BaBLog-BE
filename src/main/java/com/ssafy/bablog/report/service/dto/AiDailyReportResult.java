@@ -1,0 +1,22 @@
+package com.ssafy.bablog.report.service.dto;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.util.List;
+import java.util.Map;
+
+@Getter
+@Setter
+@NoArgsConstructor
+public class AiDailyReportResult {
+    private Integer score;
+    private String grade;
+    private String summary;
+    private List<String> highlights;
+    private List<String> improvements;
+    private List<String> recommendations;
+    private List<String> riskFlags;
+    private Map<String, Integer> nutrientScores;
+}
