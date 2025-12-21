@@ -124,6 +124,29 @@ CREATE TABLE `goal` (
   `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
 );
 
+CREATE TABLE `goal_history` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `goal_id` bigint NOT NULL,
+  `member_id` bigint NOT NULL,
+  `goal_type` enum('DAILY','WEEKLY') NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `target_value` decimal(10,2),
+  `progress_value` decimal(10,2),
+  `click_per_progress` decimal(10,2),
+  `is_completed` boolean DEFAULT false,
+  `record_date` date NOT NULL,
+  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
+  `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
+      ON UPDATE CURRENT_TIMESTAMP,
+
+  CONSTRAINT `uk_goal_record` UNIQUE (`goal_id`, `record_date`),
+
+  INDEX `idx_member_record` (`member_id`, `record_date`),
+
+  CONSTRAINT `fk_goal_history_goal`
+     FOREIGN KEY (`goal_id`) REFERENCES `goal`(`id`)
+);
+
 CREATE TABLE `daily_report` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `member_id` bigint NOT NULL,

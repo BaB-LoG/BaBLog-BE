@@ -6,6 +6,7 @@ import com.ssafy.bablog.goal.dto.GoalCreateRequest;
 import com.ssafy.bablog.goal.dto.GoalResponse;
 import com.ssafy.bablog.goal.dto.GoalUpdateRequest;
 import com.ssafy.bablog.goal.repository.GoalRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -19,12 +20,14 @@ public class GoalServiceImpl implements GoalService {
 
     private final GoalRepository goalRepository;
 
+
     //목표 등록
     @Override
     public GoalResponse createGoal(Long memberId, GoalCreateRequest request) {
 
         // 시작일 < 종료일
-        if (request.getStartDate().isAfter(request.getEndDate())) {
+        if (request.getEndDate() != null &&
+                request.getStartDate().isAfter(request.getEndDate())) {
             throw new IllegalArgumentException("시작일은 종료일보다 늦을 수 없습니다.");
         }
 
@@ -57,6 +60,8 @@ public class GoalServiceImpl implements GoalService {
 
     }
 
+
+    // 사용자, 목표 타입별 목록 전체 조회
     @Override
     public List<GoalResponse> getGoals(Long memberId, GoalType goalType) {
         List<Goal> goals = goalRepository.findByMemberIdAndGoalType(memberId, goalType);
@@ -77,6 +82,7 @@ public class GoalServiceImpl implements GoalService {
                 .toList();
     }
 
+    // 목표 상세 조회
     @Override
     public GoalResponse getGoal(Long memberId, Long goalId) {
 
@@ -97,6 +103,7 @@ public class GoalServiceImpl implements GoalService {
     }
 
 
+    //목표 수정
     @Override
     public GoalResponse updateGoal(Long memberId, Long goalId, GoalUpdateRequest request) {
 
@@ -158,6 +165,7 @@ public class GoalServiceImpl implements GoalService {
                 .build();
     }
 
+    // 목표 삭제
     @Override
     public void deleteGoal(Long memberId, Long goalId) {
 
@@ -172,6 +180,7 @@ public class GoalServiceImpl implements GoalService {
         }
     }
 
+    // 목표 진행률 증가
     @Override
     public GoalResponse increaseProgress(Long memberId, Long goalId) {
 
@@ -222,5 +231,4 @@ public class GoalServiceImpl implements GoalService {
                 .isCompleted(goal.isCompleted())
                 .build();
     }
-
 }

@@ -35,5 +35,15 @@ public interface GoalRepository {
             @Param("memberId") Long memberId
     );
 
+    // 목표 진행량 증가
     int updateProgress(Goal goal);
+
+
+    // 목표 초기화
+    int resetDailyGoals();
+    int resetWeeklyGoals();
+
+
+
+
 }

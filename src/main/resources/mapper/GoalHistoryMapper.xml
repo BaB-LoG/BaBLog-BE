@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ssafy.bablog.goal_history.repository.GoalHistoryRepository">
+
+    <resultMap id="GoalHistoryMap"
+               type="com.ssafy.bablog.goal_history.domain.GoalHistory">
+
+        <id property="id" column="id"/>
+        <result property="goalId" column="goal_id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="goalType" column="goal_type"/>
+        <result property="title" column="title"/>
+        <result property="targetValue" column="target_value"/>
+        <result property="progressValue" column="progress_value"/>
+        <result property="clickPerProgress" column="click_per_progress"/>
+        <result property="isCompleted" column="is_completed"/>
+        <result property="recordDate" column="record_date"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+<!-- DAILY 스냅샷 저장 -->
+    <insert id="insertDailySnapshots">
+        INSERT INTO goal_history (
+            goal_id,
+            member_id,
+            goal_type,
+            title,
+            target_value,
+            progress_value,
+            click_per_progress,
+            is_completed,
+            record_date
+        )
+        SELECT
+            g.id,
+            g.member_id,
+            g.goal_type,
+            g.title,
+            g.target_value,
+            g.progress_value,
+            g.click_per_progress,
+            CASE
+                WHEN g.progress_value >= g.target_value THEN true
+                ELSE false
+                END,
+            #{recordDate}
+        FROM goal g
+        WHERE g.goal_type = 'DAILY'
+    </insert>
+
+<!--  WEEKLY 스냅샷 저장 -->
+    <insert id="insertWeeklySnapshots">
+        INSERT INTO goal_history (
+            goal_id,
+            member_id,
+            goal_type,
+            title,
+            target_value,
+            progress_value,
+            click_per_progress,
+            is_completed,
+            record_date
+        )
+        SELECT
+            g.id,
+            g.member_id,
+            g.goal_type,
+            g.title,
+            g.target_value,
+            g.progress_value,
+            g.click_per_progress,
+            CASE
+                WHEN g.progress_value >= g.target_value THEN true
+                ELSE false
+                END,
+            #{recordDate}
+        FROM goal g
+        WHERE g.goal_type = 'WEEKLY'
+    </insert>
+
+
+<!-- 달력 날짜 클릭 조회 -->
+    <select id="findByMemberAndDate"
+            resultMap="GoalHistoryMap">
+        SELECT *
+        FROM goal_history
+        WHERE member_id = #{memberId}
+          AND record_date = #{date}
+    </select>
+
+<!-- id로 단건 조회 ( update 위해 필요 )    -->
+    <select id="findById"
+            resultMap="GoalHistoryMap">
+        SELECT *
+        FROM goal_history
+        WHERE id = #{id}
+    </select>
+
+    <!-- progress 수정-->
+    <update id="updateProgress">
+        UPDATE goal_history
+        SET progress_value = #{progressValue},
+            is_completed = #{isCompleted}
+        WHERE id = #{id}
+    </update>
+
+
+<!-- 기록 삭제-->
+    <delete id="deleteById">
+        DELETE FROM goal_history
+        WHERE id = #{id}
+    </delete>
+
+        <!--    &lt;!&ndash; goal 종료일 변경 시 history 동기화 &ndash;&gt;-->
+<!--    <update id="updateEndDateByGoalId">-->
+<!--        UPDATE goal_history-->
+<!--        SET end_date = #{endDate}-->
+<!--        WHERE goal_id = #{goalId}-->
+<!--    </update>-->
+
+</mapper>

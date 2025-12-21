@@ -31,7 +31,6 @@ public class GoalCreateRequest {
     @NotNull
     private LocalDate startDate;
 
-    @NotNull
     private LocalDate endDate;
 
     @NotNull

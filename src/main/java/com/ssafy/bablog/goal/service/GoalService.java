@@ -6,7 +6,6 @@ import com.ssafy.bablog.goal.dto.GoalCreateRequest;
 import com.ssafy.bablog.goal.dto.GoalResponse;
 import com.ssafy.bablog.goal.dto.GoalUpdateRequest;
 
-
 import java.util.List;
 
 public interface GoalService {

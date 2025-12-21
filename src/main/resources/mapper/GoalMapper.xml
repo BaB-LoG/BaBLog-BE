@@ -5,6 +5,22 @@
 
 <mapper namespace="com.ssafy.bablog.goal.repository.GoalRepository">
 
+    <resultMap id="GoalMap" type="com.ssafy.bablog.goal.domain.Goal">
+        <id property="id" column="id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="goalType" column="goal_type"/>
+        <result property="title" column="title"/>
+        <result property="targetValue" column="target_value"/>
+        <result property="progressValue" column="progress_value"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="clickPerProgress" column="click_per_progress"/>
+        <result property="isCompleted" column="is_completed"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+
     <insert id="insertGoal"
             parameterType="com.ssafy.bablog.goal.domain.Goal"
             useGeneratedKeys="true"
@@ -40,8 +56,8 @@
 
 
     <!-- 목표 목록 조회 (오늘 / 주간) -->
-    <select id="findByMemberIdAndGoalType"
-            resultType="com.ssafy.bablog.goal.domain.Goal">
+    <select id="findByMemberIdAndGoalType" resultMap="GoalMap">
+
         SELECT
             id,
             member_id,
@@ -62,8 +78,8 @@
 -- 정렬조건 고민
     </select>
 
-    <select id="findByIdAndMemberId"
-            resultType="com.ssafy.bablog.goal.domain.Goal">
+    <select id="findByIdAndMemberId" resultMap="GoalMap">
+
         SELECT
             id,
             member_id,
@@ -129,6 +145,26 @@
         WHERE id = #{id}
           AND member_id = #{memberId}
     </update>
+
+    <update id="resetDailyGoals">
+        UPDATE goal
+        SET progress_value = 0,
+            is_completed = false
+        WHERE goal_type = 'DAILY'
+    </update>
+
+    <update id="resetWeeklyGoals">
+        UPDATE goal
+        SET progress_value = 0,
+            is_completed = false
+        WHERE goal_type = 'WEEKLY'
+    </update>
+
+
+
+
+
+
 
 
 </mapper>
