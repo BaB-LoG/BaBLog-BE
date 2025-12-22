@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.bablog.report.repository.mapper.DailyReportMapper">
+
+    <resultMap id="DailyReportResultMap" type="com.ssafy.bablog.report.domain.DailyReport">
+        <id property="id" column="id"/>
+        <result property="memberId" column="member_id"/>
+        <result property="reportDate" column="report_date"/>
+        <result property="aiScore" column="ai_score"/>
+        <result property="grade" column="grade"/>
+        <result property="summary" column="summary"/>
+        <result property="highlights" column="highlights"/>
+        <result property="improvements" column="improvements"/>
+        <result property="recommendations" column="recommendations"/>
+        <result property="nutrientScores" column="nutrient_scores"/>
+        <result property="riskFlags" column="risk_flags"/>
+        <result property="metrics" column="metrics"/>
+        <result property="reportVersion" column="report_version"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <insert id="upsert" parameterType="com.ssafy.bablog.report.domain.DailyReport">
+        INSERT INTO daily_report (
+            member_id, report_date, ai_score, grade,
+            summary, highlights, improvements, recommendations,
+            nutrient_scores, risk_flags, metrics, report_version
+        )
+        VALUES (
+            #{memberId}, #{reportDate}, #{aiScore}, #{grade},
+            #{summary}, #{highlights}, #{improvements}, #{recommendations},
+            #{nutrientScores}, #{riskFlags}, #{metrics}, #{reportVersion}
+        )
+        ON DUPLICATE KEY UPDATE
+            ai_score = VALUES(ai_score),
+            grade = VALUES(grade),
+            summary = VALUES(summary),
+            highlights = VALUES(highlights),
+            improvements = VALUES(improvements),
+            recommendations = VALUES(recommendations),
+            nutrient_scores = VALUES(nutrient_scores),
+            risk_flags = VALUES(risk_flags),
+            metrics = VALUES(metrics),
+            report_version = VALUES(report_version),
+            updated_at = CURRENT_TIMESTAMP
+    </insert>
+
+    <select id="findByMemberAndDate" resultMap="DailyReportResultMap">
+        SELECT id, member_id, report_date, ai_score, grade,
+               summary, highlights, improvements, recommendations,
+               nutrient_scores, risk_flags, metrics, report_version,
+               created_at, updated_at
+        FROM daily_report
+        WHERE member_id = #{memberId}
+          AND report_date = #{reportDate}
+        LIMIT 1
+    </select>
+
+    <select id="findScoresByMemberAndRange" resultType="com.ssafy.bablog.report.service.dto.DailyScorePoint">
+        SELECT report_date AS date,
+               ai_score AS score
+        FROM daily_report
+        WHERE member_id = #{memberId}
+          AND report_date BETWEEN #{startDate} AND #{endDate}
+        ORDER BY report_date
+    </select>
+
+</mapper>

@@ -60,4 +60,41 @@
         </foreach>
     </select>
 
+    <select id="findDailyTotal" resultType="com.ssafy.bablog.meal_log.repository.mapper.MealLogDailyTotal">
+        SELECT DATE(logged_at) AS target_date,
+               SUM(kcal) AS kcal,
+               SUM(protein) AS protein,
+               SUM(fat) AS fat,
+               SUM(saturated_fat) AS saturated_fat,
+               SUM(trans_fat) AS trans_fat,
+               SUM(carbohydrates) AS carbohydrates,
+               SUM(sugar) AS sugar,
+               SUM(natrium) AS natrium,
+               SUM(cholesterol) AS cholesterol
+        FROM meal_log
+        WHERE member_id = #{memberId}
+          AND logged_at >= #{targetDate}
+          AND logged_at <![CDATA[ < ]]> DATE_ADD(#{targetDate}, INTERVAL 1 DAY)
+        GROUP BY DATE(logged_at)
+    </select>
+
+    <select id="findDailyTotalsInRange" resultType="com.ssafy.bablog.meal_log.repository.mapper.MealLogDailyTotal">
+        SELECT DATE(logged_at) AS target_date,
+               SUM(kcal) AS kcal,
+               SUM(protein) AS protein,
+               SUM(fat) AS fat,
+               SUM(saturated_fat) AS saturated_fat,
+               SUM(trans_fat) AS trans_fat,
+               SUM(carbohydrates) AS carbohydrates,
+               SUM(sugar) AS sugar,
+               SUM(natrium) AS natrium,
+               SUM(cholesterol) AS cholesterol
+        FROM meal_log
+        WHERE member_id = #{memberId}
+          AND logged_at >= #{from}
+          AND logged_at <![CDATA[ < ]]> DATE_ADD(#{to}, INTERVAL 1 DAY)
+        GROUP BY DATE(logged_at)
+        ORDER BY target_date
+    </select>
+
 </mapper>

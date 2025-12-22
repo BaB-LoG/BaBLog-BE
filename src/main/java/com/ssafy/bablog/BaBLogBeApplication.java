@@ -7,19 +7,19 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @MapperScan({
-        "com.ssafy.bablog.member.repository.mapper",
-        "com.ssafy.bablog.meal.repository.mapper",
-        "com.ssafy.bablog.meal_log.repository.mapper",
-        "com.ssafy.bablog.food.repository.mapper",
-        "com.ssafy.bablog.member_nutrient.repository.mapper",
-        "com.ssafy.bablog.goal.repository",
-        "com.ssafy.bablog.goal_history.repository"
+                "com.ssafy.bablog.member.repository.mapper",
+                "com.ssafy.bablog.meal.repository.mapper",
+                "com.ssafy.bablog.meal_log.repository.mapper",
+                "com.ssafy.bablog.food.repository.mapper",
+                "com.ssafy.bablog.member_nutrient.repository.mapper",
+                "com.ssafy.bablog.goal.repository",
+                "com.ssafy.bablog.goal_history.repository",
+                "com.ssafy.bablog.report.repository.mapper"
 })
 @EnableScheduling
 public class BaBLogBeApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(BaBLogBeApplication.class, args);
-    }
-
+        public static void main(String[] args) {
+                SpringApplication.run(BaBLogBeApplication.class, args);
+        }
 }

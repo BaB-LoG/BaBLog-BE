@@ -2,6 +2,7 @@ package com.ssafy.bablog.meal.controller;
 
 import com.ssafy.bablog.meal.controller.dto.AddMealFoodRequest;
 import com.ssafy.bablog.meal.controller.dto.AddMealFoodResponse;
+import com.ssafy.bablog.meal.controller.dto.DashboardSummaryResponse;
 import com.ssafy.bablog.meal.controller.dto.MealWithFoodsResponse;
 import com.ssafy.bablog.meal.controller.dto.UpdateMealFoodRequest;
 import com.ssafy.bablog.meal.service.MealService;
@@ -49,6 +50,15 @@ public class MealController {
     public ResponseEntity<List<MealWithFoodsResponse>> getMeals(@AuthenticationPrincipal MemberPrincipal principal,
                                                        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate mealDate) {
         return ResponseEntity.ok(mealService.getMeals(principal.getId(), mealDate));
+    }
+
+    /**
+     * 대시보드용 일자 요약
+     */
+    @GetMapping("/summary")
+    public ResponseEntity<DashboardSummaryResponse> getDailySummary(@AuthenticationPrincipal MemberPrincipal principal,
+                                                                    @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate mealDate) {
+        return ResponseEntity.ok(mealService.getDailySummary(principal.getId(), mealDate));
     }
 
     /** 식단 단건 조회 (BREAK_FAST 단일, LUNCH 단일 등) */
