@@ -82,6 +82,37 @@
         WHERE g.goal_type = 'WEEKLY'
     </insert>
 
+    <!-- 단일 WEEKLY 목표 최초 생성 시 history 추가 -->
+    <insert id="insertWeeklySnapshotsForGoal">
+        INSERT INTO goal_history (
+            goal_id,
+            member_id,
+            goal_type,
+            title,
+            target_value,
+            progress_value,
+            click_per_progress,
+            is_completed,
+            record_date
+        )
+        SELECT
+            g.id,
+            g.member_id,
+            g.goal_type,
+            g.title,
+            g.target_value,
+            g.progress_value,
+            g.click_per_progress,
+            CASE
+                WHEN g.progress_value >= g.target_value THEN true
+                ELSE false
+                END,
+            #{recordDate}
+        FROM goal g
+        WHERE g.id = #{goalId}
+          AND g.goal_type = 'WEEKLY'
+    </insert>
+
 
 <!-- 달력 날짜 클릭 조회 -->
     <select id="findByMemberAndDate"
@@ -89,7 +120,20 @@
         SELECT *
         FROM goal_history
         WHERE member_id = #{memberId}
-          AND record_date = #{date}
+        AND (
+            (goal_type = 'DAILY' AND record_date = #{date})
+            OR
+            (goal_type = 'WEEKLY' AND record_date = DATE_SUB(#{date}, INTERVAL (WEEKDAY(#{date})) DAY))
+        )
+    </select>
+
+    <!-- 특정 목표의 특정 날짜 기록 조회 -->
+    <select id="findByGoalIdAndRecordDate"
+            resultMap="GoalHistoryMap">
+        SELECT *
+        FROM goal_history
+        WHERE goal_id = #{goalId}
+          AND record_date = #{recordDate}
     </select>
 
 <!-- id로 단건 조회 ( update 위해 필요 )    -->
@@ -106,6 +150,15 @@
         SET progress_value = #{progressValue},
             is_completed = #{isCompleted}
         WHERE id = #{id}
+    </update>
+
+    <!-- goalId와 recordDate로 progress 수정 -->
+    <update id="updateProgressByGoalIdAndRecordDate">
+        UPDATE goal_history
+        SET progress_value = #{progressValue},
+            is_completed = #{isCompleted}
+        WHERE goal_id = #{goalId}
+          AND record_date = #{recordDate}
     </update>
 
 

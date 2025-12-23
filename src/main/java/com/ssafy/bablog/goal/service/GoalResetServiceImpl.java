@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 
 @Service
@@ -26,13 +25,12 @@ public class GoalResetServiceImpl implements GoalResetService {
 
     @Override
     public void resetWeeklyGoals() {
-        LocalDate recordDate =
-                LocalDate.now().minusWeeks(1).with(DayOfWeek.SUNDAY);
-
-        goalHistoryRepository.insertWeeklySnapshots(recordDate);
+        // 주간 목표 리셋 (progress 0으로)
         goalRepository.resetWeeklyGoals();
+
+        // 새 주(오늘 월요일)를 위한 history 초기화
+        LocalDate recordDate = LocalDate.now(); // 오늘이 월요일임
+        goalHistoryRepository.insertWeeklySnapshots(recordDate);
     }
-
-
 
 }

@@ -6,6 +6,7 @@ import com.ssafy.bablog.goal.dto.GoalCreateRequest;
 import com.ssafy.bablog.goal.dto.GoalResponse;
 import com.ssafy.bablog.goal.dto.GoalUpdateRequest;
 import com.ssafy.bablog.goal.repository.GoalRepository;
+import com.ssafy.bablog.goal_history.repository.GoalHistoryRepository;
 
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -23,6 +25,7 @@ import java.util.List;
 public class GoalServiceImpl implements GoalService {
 
     private final GoalRepository goalRepository;
+    private final GoalHistoryRepository goalHistoryRepository;
     private static final Logger log = LoggerFactory.getLogger(GoalServiceImpl.class);
 
     // 목표 등록
@@ -48,6 +51,12 @@ public class GoalServiceImpl implements GoalService {
                 .build();
 
         goalRepository.insertGoal(goal);
+
+        // 만약 주간 목표라면, 현재 주의 월요일로 history 초기화
+        if (goal.getGoalType() == GoalType.WEEKLY) {
+            LocalDate monday = goal.getStartDate().with(DayOfWeek.MONDAY);
+            goalHistoryRepository.insertWeeklySnapshotsForGoal(goal.getId(), monday);
+        }
 
         return GoalResponse.builder()
                 .id(goal.getId())
@@ -213,6 +222,16 @@ public class GoalServiceImpl implements GoalService {
         // 진행도 증가 실행
         goalRepository.updateProgress(goal);
 
+        // 주간 목표라면 history도 동기화
+        if (goal.getGoalType() == GoalType.WEEKLY) {
+            LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
+            goalHistoryRepository.updateProgressByGoalIdAndRecordDate(
+                    goal.getId(),
+                    monday,
+                    goal.getProgressValue(),
+                    goal.isCompleted());
+        }
+
         return GoalResponse.builder()
                 .id(goal.getId())
                 .goalType(goal.getGoalType())
@@ -255,6 +274,16 @@ public class GoalServiceImpl implements GoalService {
 
         // 진행도 감소 실행
         goalRepository.updateProgress(goal);
+
+        // 주간 목표라면 history도 동기화
+        if (goal.getGoalType() == GoalType.WEEKLY) {
+            LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
+            goalHistoryRepository.updateProgressByGoalIdAndRecordDate(
+                    goal.getId(),
+                    monday,
+                    goal.getProgressValue(),
+                    goal.isCompleted());
+        }
 
         return GoalResponse.builder()
                 .id(goal.getId())
