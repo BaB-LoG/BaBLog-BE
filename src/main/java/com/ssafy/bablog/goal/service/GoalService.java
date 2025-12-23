@@ -1,6 +1,5 @@
 package com.ssafy.bablog.goal.service;
 
-
 import com.ssafy.bablog.goal.domain.GoalType;
 import com.ssafy.bablog.goal.dto.GoalCreateRequest;
 import com.ssafy.bablog.goal.dto.GoalResponse;
@@ -20,5 +19,6 @@ public interface GoalService {
     void deleteGoal(Long memberId, Long goalId);
 
     GoalResponse increaseProgress(Long memberId, Long goalId);
-}
 
+    GoalResponse decreaseProgress(Long memberId, Long goalId);
+}

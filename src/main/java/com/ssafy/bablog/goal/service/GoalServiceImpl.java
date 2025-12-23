@@ -8,7 +8,10 @@ import com.ssafy.bablog.goal.dto.GoalUpdateRequest;
 import com.ssafy.bablog.goal.repository.GoalRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,12 +19,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class GoalServiceImpl implements GoalService {
 
     private final GoalRepository goalRepository;
+    private static final Logger log = LoggerFactory.getLogger(GoalServiceImpl.class);
 
-
-    //목표 등록
+    // 목표 등록
     @Override
     public GoalResponse createGoal(Long memberId, GoalCreateRequest request) {
 
@@ -43,7 +47,6 @@ public class GoalServiceImpl implements GoalService {
                 .isCompleted(false)
                 .build();
 
-
         goalRepository.insertGoal(goal);
 
         return GoalResponse.builder()
@@ -59,7 +62,6 @@ public class GoalServiceImpl implements GoalService {
                 .build();
 
     }
-
 
     // 사용자, 목표 타입별 목록 전체 조회
     @Override
@@ -77,8 +79,7 @@ public class GoalServiceImpl implements GoalService {
                         .endDate(goal.getEndDate())
                         .clickPerProgress(goal.getClickPerProgress())
                         .isCompleted(goal.isCompleted())
-                        .build()
-                )
+                        .build())
                 .toList();
     }
 
@@ -102,8 +103,7 @@ public class GoalServiceImpl implements GoalService {
                 .build();
     }
 
-
-    //목표 수정
+    // 목표 수정
     @Override
     public GoalResponse updateGoal(Long memberId, Long goalId, GoalUpdateRequest request) {
 
@@ -111,22 +111,18 @@ public class GoalServiceImpl implements GoalService {
         Goal goal = goalRepository.findByIdAndMemberId(goalId, memberId)
                 .orElseThrow(() -> new IllegalArgumentException("목표를 찾을 수 없습니다."));
 
+        // 시작일 < 종료일
+        LocalDate startDate = request.getStartDate() != null
+                ? request.getStartDate()
+                : goal.getStartDate();
 
-        //시작일 < 종료일
-        LocalDate startDate =
-                request.getStartDate() != null
-                        ? request.getStartDate()
-                        : goal.getStartDate();
-
-        LocalDate endDate =
-                request.getEndDate() != null
-                        ? request.getEndDate()
-                        : goal.getEndDate();
+        LocalDate endDate = request.getEndDate() != null
+                ? request.getEndDate()
+                : goal.getEndDate();
 
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("시작일은 종료일보다 늦을 수 없습니다.");
         }
-
 
         // null 아닐때만 반영
         if (request.getTitle() != null) {
@@ -204,8 +200,7 @@ public class GoalServiceImpl implements GoalService {
         }
 
         // 진행도 증가
-        BigDecimal newProgress =
-                goal.getProgressValue().add(goal.getClickPerProgress());
+        BigDecimal newProgress = goal.getProgressValue().add(goal.getClickPerProgress());
 
         // 목표 초과 방지 (최대 targetValue까지만)
         if (newProgress.compareTo(goal.getTargetValue()) >= 0) {
@@ -218,6 +213,48 @@ public class GoalServiceImpl implements GoalService {
         // 진행도 증가 실행
         goalRepository.updateProgress(goal);
 
+        return GoalResponse.builder()
+                .id(goal.getId())
+                .goalType(goal.getGoalType())
+                .title(goal.getTitle())
+                .targetValue(goal.getTargetValue())
+                .progressValue(goal.getProgressValue())
+                .startDate(goal.getStartDate())
+                .endDate(goal.getEndDate())
+                .clickPerProgress(goal.getClickPerProgress())
+                .isCompleted(goal.isCompleted())
+                .build();
+    }
+
+    @Override
+    public GoalResponse decreaseProgress(Long memberId, Long goalId) {
+        log.info("decreaseProgress called - memberId: {}, goalId: {}", memberId, goalId);
+
+        // 조회 먼저 실행 ( 존재 여부, 사용자 id 일치 )
+        Goal goal = goalRepository.findByIdAndMemberId(goalId, memberId)
+                .orElseThrow(() -> new IllegalArgumentException("목표를 찾을 수 없습니다."));
+
+        log.info("Found goal: {}, current progress: {}", goal.getTitle(), goal.getProgressValue());
+
+        // 진행도 감소
+        BigDecimal newProgress = goal.getProgressValue().subtract(goal.getClickPerProgress());
+
+        // 0 미만 방지
+        if (newProgress.compareTo(BigDecimal.ZERO) < 0) {
+            newProgress = BigDecimal.ZERO;
+        }
+
+        goal.setProgressValue(newProgress);
+
+        // 만약 완료 상태였다면, 목표량 미달 시 완료 취소
+        if (newProgress.compareTo(goal.getTargetValue()) < 0) {
+            goal.setCompleted(false);
+        }
+
+        log.info("Updating goal to progress: {}, isCompleted: {}", goal.getProgressValue(), goal.isCompleted());
+
+        // 진행도 감소 실행
+        goalRepository.updateProgress(goal);
 
         return GoalResponse.builder()
                 .id(goal.getId())

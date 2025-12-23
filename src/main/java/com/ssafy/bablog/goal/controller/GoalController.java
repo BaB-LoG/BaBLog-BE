@@ -22,7 +22,7 @@ import java.util.List;
 public class GoalController {
     private final GoalService goalService;
 
-    //목표 등록
+    // 목표 등록
     @PostMapping
     public ResponseEntity<GoalResponse> createGoal(
             @AuthenticationPrincipal MemberPrincipal principal,
@@ -36,8 +36,7 @@ public class GoalController {
     @GetMapping
     public ResponseEntity<List<GoalResponse>> getGoals(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @RequestParam GoalType goalType
-    ) {
+            @RequestParam GoalType goalType) {
         Long memberId = principal.getId();
         List<GoalResponse> goals = goalService.getGoals(memberId, goalType);
         return ResponseEntity.ok(goals);
@@ -47,8 +46,7 @@ public class GoalController {
     @GetMapping("/{goalId}")
     public ResponseEntity<GoalResponse> getGoal(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @PathVariable Long goalId
-    ) {
+            @PathVariable Long goalId) {
         Long memberId = principal.getId();
         GoalResponse response = goalService.getGoal(memberId, goalId);
         return ResponseEntity.ok(response);
@@ -59,8 +57,7 @@ public class GoalController {
     public ResponseEntity<GoalResponse> updateGoal(
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long goalId,
-            @RequestBody @Valid GoalUpdateRequest request
-    ) {
+            @RequestBody @Valid GoalUpdateRequest request) {
         Long memberId = principal.getId();
         GoalResponse response = goalService.updateGoal(memberId, goalId, request);
         return ResponseEntity.ok(response);
@@ -70,8 +67,7 @@ public class GoalController {
     @DeleteMapping("/{goalId}")
     public ResponseEntity<Void> deleteGoal(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @PathVariable Long goalId
-    ) {
+            @PathVariable Long goalId) {
         Long memberId = principal.getId();
         goalService.deleteGoal(memberId, goalId);
         return ResponseEntity.noContent().build();
@@ -81,20 +77,18 @@ public class GoalController {
     @PatchMapping("/{goalId}/progress")
     public ResponseEntity<GoalResponse> increaseProgress(
             @AuthenticationPrincipal MemberPrincipal principal,
-            @PathVariable Long goalId
-    ) {
+            @PathVariable Long goalId) {
         Long memberId = principal.getId();
         GoalResponse response = goalService.increaseProgress(memberId, goalId);
         return ResponseEntity.ok(response);
     }
 
-
-
-
-
-
+    @PatchMapping("/{goalId}/progress/decrease")
+    public ResponseEntity<GoalResponse> decreaseProgress(
+            @AuthenticationPrincipal MemberPrincipal principal,
+            @PathVariable Long goalId) {
+        Long memberId = principal.getId();
+        GoalResponse response = goalService.decreaseProgress(memberId, goalId);
+        return ResponseEntity.ok(response);
+    }
 }
-
-
-
-
