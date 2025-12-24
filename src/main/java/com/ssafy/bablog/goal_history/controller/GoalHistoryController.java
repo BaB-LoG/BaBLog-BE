@@ -42,6 +42,14 @@ public class GoalHistoryController {
         return ResponseEntity.ok(goalHistoryService.getCalendarSummary(memberId, startDate, endDate));
     }
 
+    @GetMapping("/stats")
+    public ResponseEntity<List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse>> getMonthlyStats(
+            @RequestParam Long memberId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        return ResponseEntity.ok(goalHistoryService.getMonthlyStats(memberId, year, month));
+    }
+
     // 과거 기록 수정 (progress만)
     @PatchMapping("/{id}")
     public ResponseEntity<Void> updateProgress(

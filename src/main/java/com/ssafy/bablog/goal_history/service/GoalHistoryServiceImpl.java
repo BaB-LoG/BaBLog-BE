@@ -153,4 +153,121 @@ public class GoalHistoryServiceImpl implements GoalHistoryService {
 
         return result;
     }
+
+    @Override
+    public List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse> getMonthlyStats(Long memberId, int year,
+            int month) {
+        LocalDate startDate = LocalDate.of(year, month, 1);
+        LocalDate endDate = startDate.withDayOfMonth(startDate.lengthOfMonth());
+
+        // We use findByMemberIdAndDateRange but widen the start date slightly for
+        // weekly
+        // goals
+        // to catch the Monday record if the month starts in the middle of a week.
+        LocalDate queryStartDate = startDate.isBefore(startDate.minusDays(startDate.getDayOfWeek().getValue() - 1))
+                ? startDate
+                : startDate.minusDays(startDate.getDayOfWeek().getValue() - 1);
+
+        List<GoalHistory> histories = goalHistoryRepository.findByMemberIdAndDateRange(memberId, queryStartDate,
+                endDate);
+
+        // Fetch current goals to include today's live data if it's the current month
+        LocalDate today = LocalDate.now();
+        boolean isCurrentMonth = (year == today.getYear() && month == today.getMonthValue());
+        List<com.ssafy.bablog.goal.domain.Goal> currentGoals = isCurrentMonth
+                ? goalRepository.findByMemberIdAndGoalType(memberId, null)
+                : new java.util.ArrayList<>();
+
+        // Group by goalId
+        java.util.Map<Long, java.util.List<GoalHistory>> goalGroupMap = histories.stream()
+                .collect(java.util.stream.Collectors.groupingBy(GoalHistory::getGoalId));
+
+        // If it's the current month, ensure all current goals are in the map
+        // and add a "virtual" history record for today/this week
+        if (isCurrentMonth) {
+            for (com.ssafy.bablog.goal.domain.Goal g : currentGoals) {
+                java.util.List<GoalHistory> gHistories = goalGroupMap.computeIfAbsent(g.getId(),
+                        k -> new java.util.ArrayList<>());
+
+                // Add current status as a virtual history record
+                GoalHistory virtualToday = GoalHistory.builder()
+                        .goalId(g.getId())
+                        .memberId(memberId)
+                        .title(g.getTitle())
+                        .goalType(g.getGoalType())
+                        .progressValue(g.getProgressValue())
+                        .targetValue(g.getTargetValue())
+                        .isCompleted(g.isCompleted())
+                        // For daily, today. For weekly, this week's Monday.
+                        .recordDate(g.getGoalType() == com.ssafy.bablog.goal.domain.GoalType.DAILY ? today
+                                : today.minusDays(today.getDayOfWeek().getValue() - 1))
+                        .build();
+
+                // Avoid double counting if a history record for today already exists (e.g. just
+                // saved)
+                boolean alreadyExists = gHistories.stream()
+                        .anyMatch(h -> h.getRecordDate().equals(virtualToday.getRecordDate()));
+                if (!alreadyExists) {
+                    gHistories.add(virtualToday);
+                }
+            }
+        }
+
+        java.util.List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse> stats = new java.util.ArrayList<>();
+
+        for (java.util.Map.Entry<Long, java.util.List<GoalHistory>> entry : goalGroupMap.entrySet()) {
+            List<GoalHistory> goalHistories = entry.getValue().stream()
+                    .sorted(java.util.Comparator.comparing(GoalHistory::getRecordDate))
+                    .collect(java.util.stream.Collectors.toList());
+
+            if (goalHistories.isEmpty())
+                continue;
+
+            String title = goalHistories.get(0).getTitle();
+            com.ssafy.bablog.goal.domain.GoalType type = goalHistories.get(0).getGoalType();
+
+            // Calculate Max Streak
+            int maxStreak = 0;
+            int currentStreak = 0;
+            for (GoalHistory h : goalHistories) {
+                if (h.getIsCompleted() != null && h.getIsCompleted()) {
+                    currentStreak++;
+                    maxStreak = Math.max(maxStreak, currentStreak);
+                } else {
+                    currentStreak = 0;
+                }
+            }
+
+            // Calculate Average Achievement Rate
+            // We only consider records within the requested month for average
+            List<GoalHistory> monthRecords = goalHistories.stream()
+                    .filter(h -> h.getRecordDate() != null && !h.getRecordDate().isBefore(startDate)
+                            && !h.getRecordDate().isAfter(endDate))
+                    .collect(java.util.stream.Collectors.toList());
+
+            double avgRate = 0;
+            if (!monthRecords.isEmpty()) {
+                double totalRate = 0;
+                for (GoalHistory h : monthRecords) {
+                    if (h.getTargetValue() != null && h.getTargetValue().compareTo(BigDecimal.ZERO) > 0) {
+                        double progress = h.getProgressValue() != null ? h.getProgressValue().doubleValue() : 0;
+                        double target = h.getTargetValue().doubleValue();
+                        double rate = progress / target;
+                        totalRate += Math.min(rate, 1.0);
+                    }
+                }
+                avgRate = totalRate / monthRecords.size();
+            }
+
+            stats.add(com.ssafy.bablog.goal_history.dto.GoalStatsResponse.builder()
+                    .goalId(entry.getKey())
+                    .title(title)
+                    .maxStreak(maxStreak)
+                    .avgAchievementRate(avgRate * 100) // Convert to percentage
+                    .goalType(type)
+                    .build());
+        }
+
+        return stats;
+    }
 }

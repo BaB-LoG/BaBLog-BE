@@ -72,7 +72,9 @@
             updated_at
         FROM goal
         WHERE member_id = #{memberId}
+        <if test="goalType != null">
           AND goal_type = #{goalType}
+        </if>
           AND start_date &lt;= CURDATE()
           AND (end_date IS NULL OR end_date &gt;= CURDATE())
         ORDER BY is_completed ASC, created_at DESC

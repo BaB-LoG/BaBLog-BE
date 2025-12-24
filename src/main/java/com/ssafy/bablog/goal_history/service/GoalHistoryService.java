@@ -19,4 +19,7 @@ public interface GoalHistoryService {
     // 달력 시각화를 위한 요약 정보 조회
     List<com.ssafy.bablog.goal_history.dto.CalendarSummaryResponse> getCalendarSummary(Long memberId,
             LocalDate startDate, LocalDate endDate);
+
+    // 월간 목표 통계 조회 (베스트/어려운 목표용)
+    List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse> getMonthlyStats(Long memberId, int year, int month);
 }
