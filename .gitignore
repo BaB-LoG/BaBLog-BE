@@ -35,3 +35,5 @@ build/
 ### yaml
 *.yaml
 *.yml
+!*.yaml.example
+!*.yml.example

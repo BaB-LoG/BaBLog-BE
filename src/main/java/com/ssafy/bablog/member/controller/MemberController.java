@@ -1,6 +1,6 @@
 package com.ssafy.bablog.member.controller;
 
-import com.ssafy.bablog.member.controller.dto.*;
+import com.ssafy.bablog.member.dto.*;
 import com.ssafy.bablog.security.MemberPrincipal;
 import com.ssafy.bablog.member.service.MemberService;
 import jakarta.validation.Valid;

@@ -1,7 +1,7 @@
 package com.ssafy.bablog.report.controller;
 
-import com.ssafy.bablog.report.controller.dto.DailyReportResponse;
-import com.ssafy.bablog.report.controller.dto.WeeklyReportResponse;
+import com.ssafy.bablog.report.dto.DailyReportResponse;
+import com.ssafy.bablog.report.dto.WeeklyReportResponse;
 import com.ssafy.bablog.report.domain.DailyReport;
 import com.ssafy.bablog.report.domain.WeeklyReport;
 import com.ssafy.bablog.report.service.ReportService;
@@ -21,12 +21,13 @@ import java.util.Optional;
 public class ReportController {
 
     private final ReportService reportService;
+    private final ReportResponseMapper responseMapper;
 
     @PostMapping("/daily")
     public ResponseEntity<DailyReportResponse> generateDaily(@AuthenticationPrincipal MemberPrincipal principal,
                                                              @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         DailyReport report = reportService.generateDailyReport(principal.getId(), date);
-        return ResponseEntity.ok(reportService.toDailyResponse(report));
+        return ResponseEntity.ok(responseMapper.toDailyResponse(report));
     }
 
     @PostMapping("/weekly")
@@ -35,7 +36,7 @@ public class ReportController {
         LocalDate startDate = reportService.weekStart(date);
         LocalDate endDate = reportService.weekEnd(date);
         WeeklyReport report = reportService.generateWeeklyReport(principal.getId(), startDate, endDate);
-        return ResponseEntity.ok(reportService.toWeeklyResponse(report));
+        return ResponseEntity.ok(responseMapper.toWeeklyResponse(report));
     }
 
     @GetMapping("/daily")
@@ -43,7 +44,7 @@ public class ReportController {
                                                         @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         Optional<DailyReport> report = reportService.getDailyReport(principal.getId(), date);
         return report
-                .map(value -> ResponseEntity.ok(reportService.toDailyResponse(value)))
+                .map(value -> ResponseEntity.ok(responseMapper.toDailyResponse(value)))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 
@@ -52,7 +53,7 @@ public class ReportController {
                                                           @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         Optional<WeeklyReport> report = reportService.getWeeklyReport(principal.getId(), date);
         return report
-                .map(value -> ResponseEntity.ok(reportService.toWeeklyResponse(value)))
+                .map(value -> ResponseEntity.ok(responseMapper.toWeeklyResponse(value)))
                 .orElseGet(() -> ResponseEntity.noContent().build());
     }
 }

@@ -1,11 +1,12 @@
 package com.ssafy.bablog.member_nutrient.controller;
 
-import com.ssafy.bablog.member_nutrient.controller.dto.MemberNutrientDailyResponse;
-import com.ssafy.bablog.member_nutrient.controller.dto.MemberNutrientResponse;
-import com.ssafy.bablog.member_nutrient.controller.dto.UpdateMemberNutrientRequest;
+import com.ssafy.bablog.member_nutrient.dto.MemberNutrientDailyResponse;
+import com.ssafy.bablog.member_nutrient.dto.MemberNutrientResponse;
+import com.ssafy.bablog.member_nutrient.dto.UpdateMemberNutrientRequest;
 import com.ssafy.bablog.member_nutrient.domain.MemberNutrient;
 import com.ssafy.bablog.member_nutrient.domain.MemberNutrientDaily;
 import com.ssafy.bablog.member_nutrient.service.MemberNutrientService;
+import com.ssafy.bablog.member_nutrient.service.dto.MemberNutrientUpdateCommand;
 import com.ssafy.bablog.security.MemberPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +54,18 @@ public class MemberNutrientController {
     @PatchMapping
     public ResponseEntity<MemberNutrientResponse> manualUpdate(@AuthenticationPrincipal MemberPrincipal principal,
                                                                @Valid @RequestBody UpdateMemberNutrientRequest request) {
-        MemberNutrient nutrient = memberNutrientService.manualUpdate(principal.getId(), request);
+        MemberNutrientUpdateCommand command = new MemberNutrientUpdateCommand(
+                request.getKcal(),
+                request.getProtein(),
+                request.getFat(),
+                request.getSaturatedFat(),
+                request.getTransFat(),
+                request.getCarbohydrates(),
+                request.getSugar(),
+                request.getNatrium(),
+                request.getCholesterol()
+        );
+        MemberNutrient nutrient = memberNutrientService.manualUpdate(principal.getId(), command);
         return ResponseEntity.ok(MemberNutrientResponse.from(nutrient));
     }
 

@@ -1,6 +1,6 @@
 package com.ssafy.bablog.food.controller;
 
-import com.ssafy.bablog.food.controller.dto.FoodResponse;
+import com.ssafy.bablog.food.dto.FoodResponse;
 import com.ssafy.bablog.food.service.FoodService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

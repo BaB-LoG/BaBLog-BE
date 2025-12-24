@@ -2,12 +2,12 @@
 
 ## Project Structure & Module Organization
 - `src/main/java/com/ssafy/bablog`: Spring Boot entry point (`BaBLogBeApplication.java`) and future domain layers (controller/service/repository). Use package-per-layer and keep package name stable for component scanning.
-- `src/main/resources`: Configuration (`application.properties`) plus `static/` and `templates/` for any web assets. Favor profile-specific config files (e.g., `application-dev.properties`) instead of editing defaults in place.
+- `src/main/resources`: Configuration (`application.yml`) plus `static/` and `templates/` for any web assets. Favor profile-specific config files (e.g., `application-dev.yml`) instead of editing defaults in place.
 - `src/test/java/com/ssafy/bablog`: JUnit tests; mirror the main package structure so Spring’s test slicing and context loading stay predictable.
 
 ## Build, Test, and Development Commands
 - `./mvnw clean package`: Full build with dependency resolution; produces the runnable JAR in `target/`.
-- `./mvnw spring-boot:run`: Run the API locally; respects `application.properties` and env overrides (preferred during development).
+- `./mvnw spring-boot:run`: Run the API locally; respects `application.yml` and env overrides (preferred during development).
 - `./mvnw test`: Execute unit and integration tests.
 - `./mvnw -DskipTests package`: Build quickly when tests are not needed (avoid for release artifacts).
 - Environment: Java 17; keep your IDE and toolchain aligned with the Maven `java.version` property.
@@ -45,7 +45,7 @@
 
 # Project Description
 - 이 프로젝트는 BaBLog라는 서비스의 백엔드 서버입니다.
-- 프론트 엔드 서버는 JS 기반 Vue 서버로 제작할 예정입니다. 아직 제작하지 않았습니다.
+- 프론트 엔드 서버는 `BaBLog-FE/`에 Vue 3 + Vite로 구현되어 있습니다.
 - 빌드는 maven, DB는 MySQL, SQL Mapper로 mybatis를 사용합니다.
 
 ## 기능
