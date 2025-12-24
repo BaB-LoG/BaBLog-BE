@@ -115,6 +115,37 @@
           AND g.goal_type = 'WEEKLY'
     </insert>
 
+    <!-- 단일 DAILY 목표 최초 생성 시 history 추가 -->
+    <insert id="insertDailySnapshotsForGoal">
+        INSERT IGNORE INTO goal_history (
+            goal_id,
+            member_id,
+            goal_type,
+            title,
+            target_value,
+            progress_value,
+            click_per_progress,
+            is_completed,
+            record_date
+        )
+        SELECT
+            g.id,
+            g.member_id,
+            g.goal_type,
+            g.title,
+            g.target_value,
+            g.progress_value,
+            g.click_per_progress,
+            CASE
+                WHEN g.progress_value >= g.target_value THEN true
+                ELSE false
+                END,
+            #{recordDate}
+        FROM goal g
+        WHERE g.id = #{goalId}
+          AND g.goal_type = 'DAILY'
+    </insert>
+
 
 <!-- 달력 날짜 클릭 조회 -->
     <select id="findByMemberAndDate"
@@ -178,6 +209,17 @@
 
     <!-- 주간 목표 속성 전체 동기화 -->
     <update id="updateWeeklyHistoryAttributes">
+        UPDATE goal_history
+        SET title = #{title},
+            target_value = #{targetValue},
+            progress_value = #{progressValue},
+            is_completed = #{isCompleted}
+        WHERE goal_id = #{goalId}
+          AND record_date = #{recordDate}
+    </update>
+
+    <!-- 일일 목표 속성 전체 동기화 -->
+    <update id="updateDailyHistoryAttributes">
         UPDATE goal_history
         SET title = #{title},
             target_value = #{targetValue},

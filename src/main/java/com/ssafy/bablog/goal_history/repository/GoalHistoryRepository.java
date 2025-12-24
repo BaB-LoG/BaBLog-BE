@@ -22,6 +22,11 @@ public interface GoalHistoryRepository {
                         @Param("goalId") Long goalId,
                         @Param("recordDate") LocalDate recordDate);
 
+        // 단일 DAILY 목표 생성 시 history 추가
+        int insertDailySnapshotsForGoal(
+                        @Param("goalId") Long goalId,
+                        @Param("recordDate") LocalDate recordDate);
+
         // // goal 종료일 변경 시 history 동기화
         // int updateEndDateByGoalId(
         // @Param("goalId") Long goalId,
@@ -63,6 +68,15 @@ public interface GoalHistoryRepository {
 
         // goalId와 recordDate로 전체 속성 수정 (동기화용)
         int updateWeeklyHistoryAttributes(
+                        @Param("goalId") Long goalId,
+                        @Param("recordDate") LocalDate recordDate,
+                        @Param("title") String title,
+                        @Param("targetValue") BigDecimal targetValue,
+                        @Param("progressValue") BigDecimal progressValue,
+                        @Param("isCompleted") Boolean isCompleted);
+
+        // 일일 목표 속성 전체 동기화
+        int updateDailyHistoryAttributes(
                         @Param("goalId") Long goalId,
                         @Param("recordDate") LocalDate recordDate,
                         @Param("title") String title,

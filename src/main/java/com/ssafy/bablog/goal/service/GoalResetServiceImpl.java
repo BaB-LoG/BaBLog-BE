@@ -18,11 +18,11 @@ public class GoalResetServiceImpl implements GoalResetService {
     @Transactional
     @Override
     public void resetDailyGoals() {
-        LocalDate recordDate = LocalDate.now().minusDays(1);
-        // 1. 현재 상태 기록
-        goalHistoryRepository.insertDailySnapshots(recordDate);
-        // 2. 목표 초기화
-        goalRepository.resetDailyGoals(recordDate);
+        LocalDate today = LocalDate.now();
+        // 1. 목표 초기화 (진행도 0)
+        goalRepository.resetDailyGoals(today);
+        // 2. 오늘(새로운 하루)를 위한 history 초기화
+        goalHistoryRepository.insertDailySnapshots(today);
     }
 
     @Transactional

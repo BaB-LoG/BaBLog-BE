@@ -52,10 +52,16 @@ public class GoalServiceImpl implements GoalService {
 
         goalRepository.insertGoal(goal);
 
-        // 만약 주간 목표라면, 현재 주의 월요일로 history 초기화
+        // 주간 목표라면, 현재 주의 월요일로 history 초기화
         if (goal.getGoalType() == GoalType.WEEKLY) {
             LocalDate monday = goal.getStartDate().with(DayOfWeek.MONDAY);
             goalHistoryRepository.insertWeeklySnapshotsForGoal(goal.getId(), monday);
+        }
+
+        // 일일 목표라면, 오늘 날짜로 history 초기화
+        if (goal.getGoalType() == GoalType.DAILY) {
+            LocalDate today = LocalDate.now();
+            goalHistoryRepository.insertDailySnapshotsForGoal(goal.getId(), today);
         }
 
         return GoalResponse.builder()
@@ -169,6 +175,30 @@ public class GoalServiceImpl implements GoalService {
                     goal.isCompleted());
         }
 
+        // 일일 목표라면 히스토리 기록도 동기화 (제목, 목표량, 진행률 모두)
+        if (goal.getGoalType() == GoalType.DAILY) {
+            LocalDate today = LocalDate.now();
+            goalHistoryRepository.updateDailyHistoryAttributes(
+                    goal.getId(),
+                    today,
+                    goal.getTitle(),
+                    goal.getTargetValue(),
+                    goal.getProgressValue(),
+                    goal.isCompleted());
+        }
+
+        // 일일 목표라면 히스토리 기록도 동기화 (제목, 목표량, 진행률 모두)
+        if (goal.getGoalType() == GoalType.DAILY) {
+            LocalDate today = LocalDate.now();
+            goalHistoryRepository.updateDailyHistoryAttributes(
+                    goal.getId(),
+                    today,
+                    goal.getTitle(),
+                    goal.getTargetValue(),
+                    goal.getProgressValue(),
+                    goal.isCompleted());
+        }
+
         return GoalResponse.builder()
                 .id(goal.getId())
                 .goalType(goal.getGoalType())
@@ -243,6 +273,16 @@ public class GoalServiceImpl implements GoalService {
             goalHistoryRepository.updateProgressByGoalIdAndRecordDate(
                     goal.getId(),
                     monday,
+                    goal.getProgressValue(),
+                    goal.isCompleted());
+        }
+
+        // 일일 목표라면 history도 동기화
+        if (goal.getGoalType() == GoalType.DAILY) {
+            LocalDate today = LocalDate.now();
+            goalHistoryRepository.updateProgressByGoalIdAndRecordDate(
+                    goal.getId(),
+                    today,
                     goal.getProgressValue(),
                     goal.isCompleted());
         }
