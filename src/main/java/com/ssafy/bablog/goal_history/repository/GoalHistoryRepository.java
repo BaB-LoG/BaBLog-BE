@@ -33,6 +33,12 @@ public interface GoalHistoryRepository {
                         @Param("memberId") Long memberId,
                         @Param("date") LocalDate date);
 
+        // 특정 기간의 모든 기록 조회 (달력 시각화용)
+        List<GoalHistory> findByMemberIdAndDateRange(
+                        @Param("memberId") Long memberId,
+                        @Param("startDate") LocalDate startDate,
+                        @Param("endDate") LocalDate endDate);
+
         // 특정 목표의 특정 날짜 기록 조회
         GoalHistory findByGoalIdAndRecordDate(
                         @Param("goalId") Long goalId,

@@ -130,6 +130,18 @@
         ORDER BY is_completed ASC, created_at DESC
     </select>
 
+    <!-- 특정 기간의 모든 기록 조회 (달력 시각화용) -->
+    <select id="findByMemberIdAndDateRange" resultMap="GoalHistoryMap">
+        SELECT *
+        FROM goal_history
+        WHERE member_id = #{memberId}
+          AND (
+            (goal_type = 'DAILY' AND record_date BETWEEN #{startDate} AND #{endDate})
+            OR
+            (goal_type = 'WEEKLY' AND record_date BETWEEN DATE_SUB(#{startDate}, INTERVAL 6 DAY) AND #{endDate})
+          )
+    </select>
+
     <!-- 특정 목표의 특정 날짜 기록 조회 -->
     <select id="findByGoalIdAndRecordDate"
             resultMap="GoalHistoryMap">

@@ -20,17 +20,12 @@ public class GoalHistoryController {
 
     private final GoalHistoryService goalHistoryService;
 
-
     // 달력 날짜 클릭 조회
     @GetMapping
     public ResponseEntity<List<GoalHistoryResponse>> getByDate(
             @RequestParam Long memberId,
-            @RequestParam
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-            LocalDate date
-    ) {
-        List<GoalHistory> histories =
-                goalHistoryService.getHistoriesByDate(memberId, date);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<GoalHistory> histories = goalHistoryService.getHistoriesByDate(memberId, date);
 
         List<GoalHistoryResponse> response = histories.stream()
                 .map(GoalHistoryResponse::from)
@@ -39,18 +34,24 @@ public class GoalHistoryController {
         return ResponseEntity.ok(response);
     }
 
-    //과거 기록 수정 (progress만)
+    @GetMapping("/calendar")
+    public ResponseEntity<List<com.ssafy.bablog.goal_history.dto.CalendarSummaryResponse>> getCalendarSummary(
+            @RequestParam Long memberId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        return ResponseEntity.ok(goalHistoryService.getCalendarSummary(memberId, startDate, endDate));
+    }
+
+    // 과거 기록 수정 (progress만)
     @PatchMapping("/{id}")
     public ResponseEntity<Void> updateProgress(
             @PathVariable Long id,
-            @RequestBody GoalHistoryUpdateRequest request
-    ) {
+            @RequestBody GoalHistoryUpdateRequest request) {
         goalHistoryService.updateProgress(id, request.getDelta());
         return ResponseEntity.ok().build();
     }
 
-
-    //과거 기록 삭제
+    // 과거 기록 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         goalHistoryService.deleteHistory(id);
