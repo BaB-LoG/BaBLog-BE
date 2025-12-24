@@ -24,7 +24,7 @@
 
 <!-- DAILY 스냅샷 저장 -->
     <insert id="insertDailySnapshots">
-        INSERT INTO goal_history (
+        INSERT IGNORE INTO goal_history (
             goal_id,
             member_id,
             goal_type,
@@ -50,11 +50,12 @@
             #{recordDate}
         FROM goal g
         WHERE g.goal_type = 'DAILY'
+          AND (g.end_date IS NULL OR g.end_date >= #{recordDate})
     </insert>
 
 <!--  WEEKLY 스냅샷 저장 -->
     <insert id="insertWeeklySnapshots">
-        INSERT INTO goal_history (
+        INSERT IGNORE INTO goal_history (
             goal_id,
             member_id,
             goal_type,
@@ -80,11 +81,12 @@
             #{recordDate}
         FROM goal g
         WHERE g.goal_type = 'WEEKLY'
+          AND (g.end_date IS NULL OR g.end_date >= #{recordDate})
     </insert>
 
     <!-- 단일 WEEKLY 목표 최초 생성 시 history 추가 -->
     <insert id="insertWeeklySnapshotsForGoal">
-        INSERT INTO goal_history (
+        INSERT IGNORE INTO goal_history (
             goal_id,
             member_id,
             goal_type,
@@ -125,6 +127,7 @@
             OR
             (goal_type = 'WEEKLY' AND record_date = DATE_SUB(#{date}, INTERVAL (WEEKDAY(#{date})) DAY))
         )
+        ORDER BY is_completed ASC, created_at DESC
     </select>
 
     <!-- 특정 목표의 특정 날짜 기록 조회 -->
@@ -161,11 +164,27 @@
           AND record_date = #{recordDate}
     </update>
 
+    <!-- 주간 목표 속성 전체 동기화 -->
+    <update id="updateWeeklyHistoryAttributes">
+        UPDATE goal_history
+        SET title = #{title},
+            target_value = #{targetValue},
+            progress_value = #{progressValue},
+            is_completed = #{isCompleted}
+        WHERE goal_id = #{goalId}
+          AND record_date = #{recordDate}
+    </update>
+
 
 <!-- 기록 삭제-->
     <delete id="deleteById">
         DELETE FROM goal_history
         WHERE id = #{id}
+    </delete>
+
+    <delete id="deleteByGoalId">
+        DELETE FROM goal_history
+        WHERE goal_id = #{goalId}
     </delete>
 
         <!--    &lt;!&ndash; goal 종료일 변경 시 history 동기화 &ndash;&gt;-->

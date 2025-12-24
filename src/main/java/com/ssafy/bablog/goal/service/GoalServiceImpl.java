@@ -129,7 +129,7 @@ public class GoalServiceImpl implements GoalService {
                 ? request.getEndDate()
                 : goal.getEndDate();
 
-        if (startDate.isAfter(endDate)) {
+        if (endDate != null && startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("시작일은 종료일보다 늦을 수 없습니다.");
         }
 
@@ -157,6 +157,18 @@ public class GoalServiceImpl implements GoalService {
         // 수정 쿼리 실행
         goalRepository.updateGoal(goal);
 
+        // 주간 목표라면 히스토리 기록도 동기화 (제목, 목표량, 진행률 모두)
+        if (goal.getGoalType() == GoalType.WEEKLY) {
+            LocalDate monday = LocalDate.now().with(DayOfWeek.MONDAY);
+            goalHistoryRepository.updateWeeklyHistoryAttributes(
+                    goal.getId(),
+                    monday,
+                    goal.getTitle(),
+                    goal.getTargetValue(),
+                    goal.getProgressValue(),
+                    goal.isCompleted());
+        }
+
         return GoalResponse.builder()
                 .id(goal.getId())
                 .goalType(goal.getGoalType())
@@ -177,6 +189,9 @@ public class GoalServiceImpl implements GoalService {
         // 조회 먼저 실행 ( 존재 여부, 사용자 id 일치 )
         Goal goal = goalRepository.findByIdAndMemberId(goalId, memberId)
                 .orElseThrow(() -> new IllegalArgumentException("목표를 찾을 수 없습니다."));
+
+        // 관련된 goal_history 삭제 (DB 제약 조건 문제 해결)
+        goalHistoryRepository.deleteByGoalId(goalId);
 
         int deleted = goalRepository.deleteByIdAndMemberId(goalId, memberId);
 

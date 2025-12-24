@@ -19,18 +19,27 @@ public class GoalResetServiceImpl implements GoalResetService {
     @Override
     public void resetDailyGoals() {
         LocalDate recordDate = LocalDate.now().minusDays(1);
+        // 1. 현재 상태 기록
         goalHistoryRepository.insertDailySnapshots(recordDate);
-        goalRepository.resetDailyGoals();
+        // 2. 목표 초기화
+        goalRepository.resetDailyGoals(recordDate);
     }
 
+    @Transactional
     @Override
     public void resetWeeklyGoals() {
-        // 주간 목표 리셋 (progress 0으로)
-        goalRepository.resetWeeklyGoals();
+        // 이번 주 월요일 계산
+        LocalDate thisMonday = LocalDate.now().with(java.time.DayOfWeek.MONDAY);
 
-        // 새 주(오늘 월요일)를 위한 history 초기화
-        LocalDate recordDate = LocalDate.now(); // 오늘이 월요일임
-        goalHistoryRepository.insertWeeklySnapshots(recordDate);
+        // 1. 이번 주 마무리 기록 (수시 업데이트 외 혹시 모를 누락 방지)
+        goalHistoryRepository.insertWeeklySnapshots(thisMonday);
+
+        // 2. 주간 목표 리셋 (progress 0으로)
+        goalRepository.resetWeeklyGoals(thisMonday);
+
+        // 3. 다음 주를 위한 history 초기화 (새로운 시작 준비)
+        LocalDate nextMonday = thisMonday.plusWeeks(1);
+        goalHistoryRepository.insertWeeklySnapshots(nextMonday);
     }
 
 }

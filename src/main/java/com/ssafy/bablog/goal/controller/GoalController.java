@@ -91,4 +91,6 @@ public class GoalController {
         GoalResponse response = goalService.decreaseProgress(memberId, goalId);
         return ResponseEntity.ok(response);
     }
+
+
 }

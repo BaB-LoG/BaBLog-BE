@@ -55,8 +55,20 @@ public interface GoalHistoryRepository {
                         @Param("progressValue") BigDecimal progressValue,
                         @Param("isCompleted") Boolean isCompleted);
 
+        // goalId와 recordDate로 전체 속성 수정 (동기화용)
+        int updateWeeklyHistoryAttributes(
+                        @Param("goalId") Long goalId,
+                        @Param("recordDate") LocalDate recordDate,
+                        @Param("title") String title,
+                        @Param("targetValue") BigDecimal targetValue,
+                        @Param("progressValue") BigDecimal progressValue,
+                        @Param("isCompleted") Boolean isCompleted);
+
         // 기록 삭제
 
         int deleteById(@Param("id") Long id);
+
+        // 특정 목표에 대한 모든 기록 삭제
+        int deleteByGoalId(@Param("goalId") Long goalId);
 
 }
