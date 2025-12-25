@@ -132,6 +132,26 @@ CREATE TABLE `goal` (
   CONSTRAINT `fk_goal_member` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+
+CREATE TABLE `goal_history` (
+  `id` bigint AUTO_INCREMENT PRIMARY KEY,
+  `goal_id` bigint NOT NULL,
+  `member_id` bigint NOT NULL,
+  `goal_type` enum('DAILY','WEEKLY') NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `target_value` decimal(10,2),
+  `progress_value` decimal(10,2),
+  `click_per_progress` decimal(10,2),
+  `is_completed` tinyint(1) DEFAULT 0,
+  `record_date` date NOT NULL,
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT `uk_goal_record` UNIQUE (`goal_id`, `record_date`),
+  INDEX `idx_member_record` (`member_id`, `record_date`),
+  CONSTRAINT `fk_goal_history_goal` FOREIGN KEY (`goal_id`) REFERENCES `goal`(`id`),
+  CONSTRAINT `fk_goal_history_member` FOREIGN KEY (`member_id`) REFERENCES `member`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE `daily_report` (
   `id` bigint AUTO_INCREMENT PRIMARY KEY,
   `member_id` bigint NOT NULL,
