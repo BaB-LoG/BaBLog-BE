@@ -3,6 +3,7 @@
 ## Project Structure & Module Organization
 - `src/main/java/com/ssafy/bablog`: Spring Boot entry point (`BaBLogBeApplication.java`) and future domain layers (controller/service/repository). Use package-per-layer and keep package name stable for component scanning.
 - `src/main/resources`: Configuration (`application.yml`) plus `static/` and `templates/` for any web assets. Favor profile-specific config files (e.g., `application-dev.yml`) instead of editing defaults in place.
+- 목표/목표 기록 모듈은 `com.ssafy.bablog.goal`, `com.ssafy.bablog.goal_history` 패키지에 있으며, 매퍼 XML은 `src/main/resources/mapper`에 있습니다.
 - `src/test/java/com/ssafy/bablog`: JUnit tests; mirror the main package structure so Spring’s test slicing and context loading stay predictable.
 
 ## Build, Test, and Development Commands

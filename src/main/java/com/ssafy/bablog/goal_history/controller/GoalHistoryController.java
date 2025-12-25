@@ -1,8 +1,12 @@
 package com.ssafy.bablog.goal_history.controller;
 
 import com.ssafy.bablog.goal_history.domain.GoalHistory;
+import com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse;
+import com.ssafy.bablog.goal_history.dto.CalendarSummaryResponse;
 import com.ssafy.bablog.goal_history.dto.GoalHistoryResponse;
 import com.ssafy.bablog.goal_history.dto.GoalHistoryUpdateRequest;
+import com.ssafy.bablog.goal_history.dto.GoalStatsResponse;
+import com.ssafy.bablog.goal_history.dto.TodaySummaryResponse;
 import com.ssafy.bablog.goal_history.service.GoalHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -35,19 +39,28 @@ public class GoalHistoryController {
     }
 
     @GetMapping("/calendar")
-    public ResponseEntity<List<com.ssafy.bablog.goal_history.dto.CalendarSummaryResponse>> getCalendarSummary(
+    public ResponseEntity<List<CalendarSummaryResponse>> getCalendarSummary(
             @RequestParam Long memberId,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
-        return ResponseEntity.ok(goalHistoryService.getCalendarSummary(memberId, startDate, endDate));
+        List<CalendarSummaryResponse> summaries = goalHistoryService
+                .getCalendarSummary(memberId, startDate, endDate)
+                .stream()
+                .map(CalendarSummaryResponse::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(summaries);
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse>> getMonthlyStats(
+    public ResponseEntity<List<GoalStatsResponse>> getMonthlyStats(
             @RequestParam Long memberId,
             @RequestParam int year,
             @RequestParam int month) {
-        return ResponseEntity.ok(goalHistoryService.getMonthlyStats(memberId, year, month));
+        List<GoalStatsResponse> stats = goalHistoryService.getMonthlyStats(memberId, year, month)
+                .stream()
+                .map(GoalStatsResponse::from)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(stats);
     }
 
     // 과거 기록 수정 (progress만)
@@ -68,17 +81,18 @@ public class GoalHistoryController {
 
     // 오늘의 요약 통계 조회
     @GetMapping("/summary/today")
-    public ResponseEntity<com.ssafy.bablog.goal_history.dto.TodaySummaryResponse> getTodaySummary(
+    public ResponseEntity<TodaySummaryResponse> getTodaySummary(
             @RequestParam Long memberId) {
-        return ResponseEntity.ok(goalHistoryService.getTodaySummary(memberId));
+        return ResponseEntity.ok(TodaySummaryResponse.from(goalHistoryService.getTodaySummary(memberId)));
     }
 
     // 베스트/워스트 목표 조회
     @GetMapping("/stats/highlights")
-    public ResponseEntity<com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse> getBestAndWorstGoals(
+    public ResponseEntity<BestWorstGoalResponse> getBestAndWorstGoals(
             @RequestParam Long memberId,
             @RequestParam int year,
             @RequestParam int month) {
-        return ResponseEntity.ok(goalHistoryService.getBestAndWorstGoals(memberId, year, month));
+        return ResponseEntity.ok(BestWorstGoalResponse.from(
+                goalHistoryService.getBestAndWorstGoals(memberId, year, month)));
     }
 }
