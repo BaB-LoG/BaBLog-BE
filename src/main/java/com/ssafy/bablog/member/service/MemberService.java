@@ -1,8 +1,8 @@
 package com.ssafy.bablog.member.service;
 
 
-import com.ssafy.bablog.member.controller.dto.*;
 import com.ssafy.bablog.member.domain.Member;
+import com.ssafy.bablog.member.dto.*;
 import com.ssafy.bablog.member.repository.MemberRepository;
 
 import com.ssafy.bablog.security.jwt.JwtTokenProvider;
@@ -93,7 +93,13 @@ public class MemberService {
      */
     public MemberResponse updateMember(Long memberId, UpdateMemberRequest request) {
         Member member = getMember(memberId);
-        member.update(request);
+        member.update(
+                request.getName(),
+                request.getGender(),
+                request.getBirthDate(),
+                request.getHeightCm(),
+                request.getWeightKg()
+        );
         memberRepository.update(member);
         return MemberResponse.from(member);
     }

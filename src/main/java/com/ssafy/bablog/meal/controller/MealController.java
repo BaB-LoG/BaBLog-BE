@@ -1,11 +1,13 @@
 package com.ssafy.bablog.meal.controller;
 
-import com.ssafy.bablog.meal.controller.dto.AddMealFoodRequest;
-import com.ssafy.bablog.meal.controller.dto.AddMealFoodResponse;
-import com.ssafy.bablog.meal.controller.dto.DashboardSummaryResponse;
-import com.ssafy.bablog.meal.controller.dto.MealWithFoodsResponse;
-import com.ssafy.bablog.meal.controller.dto.UpdateMealFoodRequest;
+import com.ssafy.bablog.meal.dto.AddMealFoodRequest;
+import com.ssafy.bablog.meal.dto.AddMealFoodResponse;
+import com.ssafy.bablog.meal.dto.DashboardSummaryResponse;
+import com.ssafy.bablog.meal.dto.MealWithFoodsResponse;
+import com.ssafy.bablog.meal.dto.UpdateMealFoodRequest;
 import com.ssafy.bablog.meal.service.MealService;
+import com.ssafy.bablog.meal.service.dto.MealFoodAddCommand;
+import com.ssafy.bablog.meal.service.dto.MealFoodUpdateCommand;
 import com.ssafy.bablog.security.MemberPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ import java.util.List;
 public class MealController {
 
     private final MealService mealService;
+    private final MealResponseMapper responseMapper;
 
     /**
      * Member 1명의 meal을 수동생성하는 메서드
@@ -39,8 +42,16 @@ public class MealController {
     @PostMapping("/foods")
     public ResponseEntity<AddMealFoodResponse> addMealFood(@AuthenticationPrincipal MemberPrincipal principal,
                                                            @Valid @RequestBody AddMealFoodRequest request) {
-        AddMealFoodResponse response = mealService.addFoodToMeal(principal.getId(), request);
-        return ResponseEntity.ok(response);
+        MealFoodAddCommand command = new MealFoodAddCommand(
+                request.getMealType(),
+                request.getMealDate(),
+                request.getFoodId(),
+                request.getIntake(),
+                request.getUnit()
+        );
+        return ResponseEntity.ok(responseMapper.toAddMealFoodResponse(
+                mealService.addFoodToMeal(principal.getId(), command)
+        ));
     }
 
     /**
@@ -49,7 +60,9 @@ public class MealController {
     @GetMapping
     public ResponseEntity<List<MealWithFoodsResponse>> getMeals(@AuthenticationPrincipal MemberPrincipal principal,
                                                        @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate mealDate) {
-        return ResponseEntity.ok(mealService.getMeals(principal.getId(), mealDate));
+        return ResponseEntity.ok(responseMapper.toMealWithFoodsResponses(
+                mealService.getMeals(principal.getId(), mealDate)
+        ));
     }
 
     /**
@@ -58,14 +71,18 @@ public class MealController {
     @GetMapping("/summary")
     public ResponseEntity<DashboardSummaryResponse> getDailySummary(@AuthenticationPrincipal MemberPrincipal principal,
                                                                     @RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate mealDate) {
-        return ResponseEntity.ok(mealService.getDailySummary(principal.getId(), mealDate));
+        return ResponseEntity.ok(responseMapper.toDashboardSummaryResponse(
+                mealService.getDailySummary(principal.getId(), mealDate)
+        ));
     }
 
     /** 식단 단건 조회 (BREAK_FAST 단일, LUNCH 단일 등) */
     @GetMapping("/{mealId}")
     public ResponseEntity<MealWithFoodsResponse> getMeal(@AuthenticationPrincipal MemberPrincipal principal,
                                                          @PathVariable Long mealId) {
-        return ResponseEntity.ok(mealService.getMeal(principal.getId(), mealId));
+        return ResponseEntity.ok(responseMapper.toMealWithFoodsResponse(
+                mealService.getMeal(principal.getId(), mealId)
+        ));
     }
 
     /**
@@ -85,6 +102,14 @@ public class MealController {
     public ResponseEntity<MealWithFoodsResponse> updateMealFood(@AuthenticationPrincipal MemberPrincipal principal,
                                                                 @PathVariable Long mealFoodId,
                                                                 @Valid @RequestBody UpdateMealFoodRequest request) {
-        return ResponseEntity.ok(mealService.updateMealFood(principal.getId(), mealFoodId, request));
+        MealFoodUpdateCommand command = new MealFoodUpdateCommand(
+                request.getMealId(),
+                request.getFoodId(),
+                request.getIntake(),
+                request.getUnit()
+        );
+        return ResponseEntity.ok(responseMapper.toMealWithFoodsResponse(
+                mealService.updateMealFood(principal.getId(), mealFoodId, command)
+        ));
     }
 }
