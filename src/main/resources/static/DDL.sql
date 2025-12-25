@@ -103,7 +103,7 @@ CREATE TABLE `meal_food` (
   `id` bigint PRIMARY KEY AUTO_INCREMENT,
   `meal_id` bigint NOT NULL,
   `food_id` bigint NOT NULL,
-  `intake` decimal(10,2),
+  `quantity` decimal(10,2),
   `unit` varchar(50),
   `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
   `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
@@ -122,6 +122,29 @@ CREATE TABLE `goal` (
   `is_completed` boolean DEFAULT false,
   `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
   `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
+);
+
+CREATE TABLE `goal_history` (
+  `id` bigint PRIMARY KEY AUTO_INCREMENT,
+  `goal_id` bigint NOT NULL,
+  `member_id` bigint NOT NULL,
+  `goal_type` enum('DAILY','WEEKLY') NOT NULL,
+  `title` varchar(100) NOT NULL,
+  `target_value` decimal(10,2),
+  `progress_value` decimal(10,2),
+  `click_per_progress` decimal(10,2),
+  `is_completed` boolean DEFAULT false,
+  `record_date` date NOT NULL,
+  `created_at` datetime DEFAULT (CURRENT_TIMESTAMP),
+  `updated_at` datetime DEFAULT (CURRENT_TIMESTAMP)
+      ON UPDATE CURRENT_TIMESTAMP,
+
+  CONSTRAINT `uk_goal_record` UNIQUE (`goal_id`, `record_date`),
+
+  INDEX `idx_member_record` (`member_id`, `record_date`),
+
+  CONSTRAINT `fk_goal_history_goal`
+     FOREIGN KEY (`goal_id`) REFERENCES `goal`(`id`)
 );
 
 CREATE TABLE `daily_report` (
@@ -195,10 +218,7 @@ CREATE UNIQUE INDEX `idx_daily_report_member_report_date` ON `daily_report` (`me
 
 CREATE UNIQUE INDEX `idx_weekly_report_member_period` ON `weekly_report` (`member_id`, `start_date`, `end_date`);
 
-CREATE UNIQUE INDEX `idx_member_nutrient_daily_member_date` ON `member_nutrient_daily` (`member_id`, `target_date`);
-
 ALTER TABLE `member_nutrient` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
-ALTER TABLE `member_nutrient_daily` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 
 ALTER TABLE `meal_log` ADD FOREIGN KEY (`member_id`) REFERENCES `member` (`id`);
 
