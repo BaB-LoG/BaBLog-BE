@@ -50,6 +50,7 @@
             #{recordDate}
         FROM goal g
         WHERE g.goal_type = 'DAILY'
+          <![CDATA[AND g.start_date <= #{recordDate}]]>
           AND (g.end_date IS NULL OR g.end_date >= #{recordDate})
     </insert>
 
@@ -81,6 +82,7 @@
             #{recordDate}
         FROM goal g
         WHERE g.goal_type = 'WEEKLY'
+          <![CDATA[AND g.start_date <= #{recordDate}]]>
           AND (g.end_date IS NULL OR g.end_date >= #{recordDate})
     </insert>
 
@@ -241,11 +243,12 @@
         WHERE goal_id = #{goalId}
     </delete>
 
-        <!--    &lt;!&ndash; goal 종료일 변경 시 history 동기화 &ndash;&gt;-->
-<!--    <update id="updateEndDateByGoalId">-->
-<!--        UPDATE goal_history-->
-<!--        SET end_date = #{endDate}-->
-<!--        WHERE goal_id = #{goalId}-->
-<!--    </update>-->
+    <!-- 목표 시작일 변경 시 history record_date 업데이트 -->
+    <update id="updateRecordDateByGoalId">
+        UPDATE goal_history
+        SET record_date = #{newRecordDate}
+        WHERE goal_id = #{goalId}
+          AND record_date = #{oldRecordDate}
+    </update>
 
 </mapper>

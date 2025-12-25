@@ -270,4 +270,107 @@ public class GoalHistoryServiceImpl implements GoalHistoryService {
 
         return stats;
     }
+
+    @Override
+    public com.ssafy.bablog.goal_history.dto.TodaySummaryResponse getTodaySummary(Long memberId) {
+        // 일일 목표 조회
+        List<com.ssafy.bablog.goal.domain.Goal> dailyGoals = goalRepository.findByMemberIdAndGoalType(memberId,
+                com.ssafy.bablog.goal.domain.GoalType.DAILY);
+
+        // 주간 목표 조회
+        List<com.ssafy.bablog.goal.domain.Goal> weeklyGoals = goalRepository.findByMemberIdAndGoalType(memberId,
+                com.ssafy.bablog.goal.domain.GoalType.WEEKLY);
+
+        // 일일 목표 통계 계산
+        int dailyCompleted = (int) dailyGoals.stream().filter(g -> g.isCompleted()).count();
+        int dailyInProgress = dailyGoals.size() - dailyCompleted;
+
+        double dailyAchievementRate = 0;
+        if (!dailyGoals.isEmpty()) {
+            double totalRate = 0;
+            for (com.ssafy.bablog.goal.domain.Goal g : dailyGoals) {
+                if (g.getTargetValue() != null && g.getTargetValue().compareTo(BigDecimal.ZERO) > 0) {
+                    double progress = g.getProgressValue() != null ? g.getProgressValue().doubleValue() : 0;
+                    double target = g.getTargetValue().doubleValue();
+                    double rate = progress / target;
+                    totalRate += Math.min(rate, 1.0);
+                }
+            }
+            dailyAchievementRate = (totalRate / dailyGoals.size()) * 100;
+        }
+
+        // 주간 목표 통계 계산
+        int weeklyTotal = weeklyGoals.size();
+        int weeklyCompleted = (int) weeklyGoals.stream().filter(g -> g.isCompleted()).count();
+        double weeklyAchievementRate = weeklyTotal > 0 ? ((double) weeklyCompleted / weeklyTotal) * 100 : 0;
+
+        return com.ssafy.bablog.goal_history.dto.TodaySummaryResponse.builder()
+                .dailyCompleted(dailyCompleted)
+                .dailyInProgress(dailyInProgress)
+                .dailyAchievementRate(Math.round(dailyAchievementRate))
+                .weeklyTotal(weeklyTotal)
+                .weeklyCompleted(weeklyCompleted)
+                .weeklyAchievementRate(Math.round(weeklyAchievementRate))
+                .build();
+    }
+
+    @Override
+    public com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse getBestAndWorstGoals(Long memberId, int year,
+            int month) {
+        // 월간 통계 조회
+        List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse> monthlyStats = getMonthlyStats(memberId, year, month);
+
+        // 일일 목표만 필터링
+        List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse> dailyStats = monthlyStats.stream()
+                .filter(s -> s.getGoalType() == com.ssafy.bablog.goal.domain.GoalType.DAILY)
+                .collect(java.util.stream.Collectors.toList());
+
+        com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse.GoalHighlight bestGoal = null;
+        com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse.GoalHighlight hardestGoal = null;
+
+        if (!dailyStats.isEmpty()) {
+            // 베스트 목표: maxStreak 우선, 차선으로 avgAchievementRate
+            com.ssafy.bablog.goal_history.dto.GoalStatsResponse best = dailyStats.get(0);
+            for (com.ssafy.bablog.goal_history.dto.GoalStatsResponse s : dailyStats) {
+                if (s.getMaxStreak() > best.getMaxStreak()) {
+                    best = s;
+                } else if (s.getMaxStreak() == best.getMaxStreak()
+                        && s.getAvgAchievementRate() > best.getAvgAchievementRate()) {
+                    best = s;
+                }
+            }
+            bestGoal = com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse.GoalHighlight.builder()
+                    .goalId(best.getGoalId())
+                    .title(best.getTitle())
+                    .maxStreak(best.getMaxStreak())
+                    .avgAchievementRate(best.getAvgAchievementRate())
+                    .build();
+
+            // 가장 어려운 목표: 달성률 낮은 것 (미완료 목표 우선)
+            List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse> incomplete = dailyStats.stream()
+                    .filter(s -> s.getAvgAchievementRate() < 100)
+                    .collect(java.util.stream.Collectors.toList());
+
+            List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse> targetSet = !incomplete.isEmpty() ? incomplete
+                    : dailyStats;
+
+            com.ssafy.bablog.goal_history.dto.GoalStatsResponse hardest = targetSet.get(0);
+            for (com.ssafy.bablog.goal_history.dto.GoalStatsResponse s : targetSet) {
+                if (s.getAvgAchievementRate() < hardest.getAvgAchievementRate()) {
+                    hardest = s;
+                }
+            }
+            hardestGoal = com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse.GoalHighlight.builder()
+                    .goalId(hardest.getGoalId())
+                    .title(hardest.getTitle())
+                    .maxStreak(hardest.getMaxStreak())
+                    .avgAchievementRate(hardest.getAvgAchievementRate())
+                    .build();
+        }
+
+        return com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse.builder()
+                .bestGoal(bestGoal)
+                .hardestGoal(hardestGoal)
+                .build();
+    }
 }

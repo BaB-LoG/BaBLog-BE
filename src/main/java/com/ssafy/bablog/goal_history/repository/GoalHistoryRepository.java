@@ -91,4 +91,10 @@ public interface GoalHistoryRepository {
         // 특정 목표에 대한 모든 기록 삭제
         int deleteByGoalId(@Param("goalId") Long goalId);
 
+        // 목표의 시작일 변경 시 history record_date 업데이트
+        int updateRecordDateByGoalId(
+                        @Param("goalId") Long goalId,
+                        @Param("oldRecordDate") LocalDate oldRecordDate,
+                        @Param("newRecordDate") LocalDate newRecordDate);
+
 }

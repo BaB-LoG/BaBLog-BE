@@ -22,4 +22,10 @@ public interface GoalHistoryService {
 
     // 월간 목표 통계 조회 (베스트/어려운 목표용)
     List<com.ssafy.bablog.goal_history.dto.GoalStatsResponse> getMonthlyStats(Long memberId, int year, int month);
+
+    // 오늘의 요약 통계 조회
+    com.ssafy.bablog.goal_history.dto.TodaySummaryResponse getTodaySummary(Long memberId);
+
+    // 베스트/워스트 목표 조회
+    com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse getBestAndWorstGoals(Long memberId, int year, int month);
 }

@@ -58,10 +58,12 @@ public class GoalServiceImpl implements GoalService {
             goalHistoryRepository.insertWeeklySnapshotsForGoal(goal.getId(), monday);
         }
 
-        // 일일 목표라면, 오늘 날짜로 history 초기화
+        // 일일 목표라면, 시작일 또는 오늘 날짜로 history 초기화
         if (goal.getGoalType() == GoalType.DAILY) {
             LocalDate today = LocalDate.now();
-            goalHistoryRepository.insertDailySnapshotsForGoal(goal.getId(), today);
+            // 시작일이 오늘보다 미래면 시작일로, 아니면 오늘로
+            LocalDate recordDate = goal.getStartDate().isAfter(today) ? goal.getStartDate() : today;
+            goalHistoryRepository.insertDailySnapshotsForGoal(goal.getId(), recordDate);
         }
 
         return GoalResponse.builder()
@@ -139,6 +141,10 @@ public class GoalServiceImpl implements GoalService {
             throw new IllegalArgumentException("시작일은 종료일보다 늦을 수 없습니다.");
         }
 
+        // 시작일 변경 시 history의 record_date도 업데이트
+        LocalDate oldStartDate = goal.getStartDate();
+        boolean startDateChanged = request.getStartDate() != null && !request.getStartDate().equals(oldStartDate);
+
         // null 아닐때만 반영
         if (request.getTitle() != null) {
             goal.setTitle(request.getTitle());
@@ -162,6 +168,26 @@ public class GoalServiceImpl implements GoalService {
 
         // 수정 쿼리 실행
         goalRepository.updateGoal(goal);
+
+        // 시작일이 변경되었으면 history의 record_date도 업데이트
+        if (startDateChanged) {
+            LocalDate today = LocalDate.now();
+
+            if (goal.getGoalType() == GoalType.DAILY) {
+                // 기존 record_date: 이전 시작일이 오늘보다 미래였으면 시작일, 아니면 오늘
+                LocalDate oldRecordDate = oldStartDate.isAfter(today) ? oldStartDate : today;
+                // 새 record_date: 새 시작일이 오늘보다 미래면 시작일, 아니면 오늘
+                LocalDate newRecordDate = goal.getStartDate().isAfter(today) ? goal.getStartDate() : today;
+
+                goalHistoryRepository.updateRecordDateByGoalId(goal.getId(), oldRecordDate, newRecordDate);
+            } else if (goal.getGoalType() == GoalType.WEEKLY) {
+                // 주간 목표: 이전 시작일 기준 월요일 → 새 시작일 기준 월요일
+                LocalDate oldMonday = oldStartDate.with(DayOfWeek.MONDAY);
+                LocalDate newMonday = goal.getStartDate().with(DayOfWeek.MONDAY);
+
+                goalHistoryRepository.updateRecordDateByGoalId(goal.getId(), oldMonday, newMonday);
+            }
+        }
 
         // 주간 목표라면 히스토리 기록도 동기화 (제목, 목표량, 진행률 모두)
         if (goal.getGoalType() == GoalType.WEEKLY) {
@@ -280,9 +306,11 @@ public class GoalServiceImpl implements GoalService {
         // 일일 목표라면 history도 동기화
         if (goal.getGoalType() == GoalType.DAILY) {
             LocalDate today = LocalDate.now();
+            // 시작일이 오늘보다 미래면 시작일로, 아니면 오늘로 (생성 시와 동일한 로직)
+            LocalDate recordDate = goal.getStartDate().isAfter(today) ? goal.getStartDate() : today;
             goalHistoryRepository.updateProgressByGoalIdAndRecordDate(
                     goal.getId(),
-                    today,
+                    recordDate,
                     goal.getProgressValue(),
                     goal.isCompleted());
         }
@@ -336,6 +364,18 @@ public class GoalServiceImpl implements GoalService {
             goalHistoryRepository.updateProgressByGoalIdAndRecordDate(
                     goal.getId(),
                     monday,
+                    goal.getProgressValue(),
+                    goal.isCompleted());
+        }
+
+        // 일일 목표라면 history도 동기화
+        if (goal.getGoalType() == GoalType.DAILY) {
+            LocalDate today = LocalDate.now();
+            // 시작일이 오늘보다 미래면 시작일로, 아니면 오늘로 (생성 시와 동일한 로직)
+            LocalDate recordDate = goal.getStartDate().isAfter(today) ? goal.getStartDate() : today;
+            goalHistoryRepository.updateProgressByGoalIdAndRecordDate(
+                    goal.getId(),
+                    recordDate,
                     goal.getProgressValue(),
                     goal.isCompleted());
         }

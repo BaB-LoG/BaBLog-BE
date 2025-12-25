@@ -65,4 +65,20 @@ public class GoalHistoryController {
         goalHistoryService.deleteHistory(id);
         return ResponseEntity.noContent().build();
     }
+
+    // 오늘의 요약 통계 조회
+    @GetMapping("/summary/today")
+    public ResponseEntity<com.ssafy.bablog.goal_history.dto.TodaySummaryResponse> getTodaySummary(
+            @RequestParam Long memberId) {
+        return ResponseEntity.ok(goalHistoryService.getTodaySummary(memberId));
+    }
+
+    // 베스트/워스트 목표 조회
+    @GetMapping("/stats/highlights")
+    public ResponseEntity<com.ssafy.bablog.goal_history.dto.BestWorstGoalResponse> getBestAndWorstGoals(
+            @RequestParam Long memberId,
+            @RequestParam int year,
+            @RequestParam int month) {
+        return ResponseEntity.ok(goalHistoryService.getBestAndWorstGoals(memberId, year, month));
+    }
 }
