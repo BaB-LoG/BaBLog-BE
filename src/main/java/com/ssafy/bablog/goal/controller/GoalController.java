@@ -4,6 +4,9 @@ import com.ssafy.bablog.goal.domain.GoalType;
 import com.ssafy.bablog.goal.dto.GoalCreateRequest;
 import com.ssafy.bablog.goal.dto.GoalResponse;
 import com.ssafy.bablog.goal.dto.GoalUpdateRequest;
+import com.ssafy.bablog.goal.service.dto.GoalCreateCommand;
+import com.ssafy.bablog.goal.service.dto.GoalResult;
+import com.ssafy.bablog.goal.service.dto.GoalUpdateCommand;
 import com.ssafy.bablog.goal.service.GoalService;
 import com.ssafy.bablog.security.MemberPrincipal;
 import jakarta.validation.Valid;
@@ -28,8 +31,15 @@ public class GoalController {
             @AuthenticationPrincipal MemberPrincipal principal,
             @RequestBody @Valid GoalCreateRequest request) {
         Long memberId = principal.getId();
-        GoalResponse response = goalService.createGoal(memberId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        GoalResult result = goalService.createGoal(memberId, new GoalCreateCommand(
+                request.getTitle(),
+                request.getGoalType(),
+                request.getTargetValue(),
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getClickPerProgress()
+        ));
+        return ResponseEntity.status(HttpStatus.CREATED).body(GoalResponse.from(result));
     }
 
     // 목표 목록 조회 (일일 / 주간)
@@ -38,7 +48,10 @@ public class GoalController {
             @AuthenticationPrincipal MemberPrincipal principal,
             @RequestParam GoalType goalType) {
         Long memberId = principal.getId();
-        List<GoalResponse> goals = goalService.getGoals(memberId, goalType);
+        List<GoalResponse> goals = goalService.getGoals(memberId, goalType)
+                .stream()
+                .map(GoalResponse::from)
+                .toList();
         return ResponseEntity.ok(goals);
     }
 
@@ -48,8 +61,8 @@ public class GoalController {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long goalId) {
         Long memberId = principal.getId();
-        GoalResponse response = goalService.getGoal(memberId, goalId);
-        return ResponseEntity.ok(response);
+        GoalResult result = goalService.getGoal(memberId, goalId);
+        return ResponseEntity.ok(GoalResponse.from(result));
     }
 
     // 목표 수정
@@ -59,8 +72,14 @@ public class GoalController {
             @PathVariable Long goalId,
             @RequestBody @Valid GoalUpdateRequest request) {
         Long memberId = principal.getId();
-        GoalResponse response = goalService.updateGoal(memberId, goalId, request);
-        return ResponseEntity.ok(response);
+        GoalResult result = goalService.updateGoal(memberId, goalId, new GoalUpdateCommand(
+                request.getTitle(),
+                request.getTargetValue(),
+                request.getStartDate(),
+                request.getEndDate(),
+                request.getClickPerProgress()
+        ));
+        return ResponseEntity.ok(GoalResponse.from(result));
     }
 
     // 목표 삭제
@@ -79,8 +98,8 @@ public class GoalController {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long goalId) {
         Long memberId = principal.getId();
-        GoalResponse response = goalService.increaseProgress(memberId, goalId);
-        return ResponseEntity.ok(response);
+        GoalResult result = goalService.increaseProgress(memberId, goalId);
+        return ResponseEntity.ok(GoalResponse.from(result));
     }
 
     @PatchMapping("/{goalId}/progress/decrease")
@@ -88,8 +107,8 @@ public class GoalController {
             @AuthenticationPrincipal MemberPrincipal principal,
             @PathVariable Long goalId) {
         Long memberId = principal.getId();
-        GoalResponse response = goalService.decreaseProgress(memberId, goalId);
-        return ResponseEntity.ok(response);
+        GoalResult result = goalService.decreaseProgress(memberId, goalId);
+        return ResponseEntity.ok(GoalResponse.from(result));
     }
 
 
